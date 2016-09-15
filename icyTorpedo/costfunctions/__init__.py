@@ -1,0 +1,3 @@
+from .SquaredError import (
+        SquaredError,
+        )
