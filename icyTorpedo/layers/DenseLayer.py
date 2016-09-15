@@ -44,6 +44,7 @@ class DenseLayer(baseLayer):
     def initialise_weights(self):
 
         # Weights
+        # TODO Scale between -0.5 and 0.5
         self.W = np.random.randn(self.input_shape, self.num_units) 
 
         # Biases

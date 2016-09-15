@@ -48,4 +48,5 @@ class TestMnistSingle(unittest.TestCase):
         print("Correct value")
         print("{:^10}{}".format("-", "".join(["%0.4f, " % x for x in self.net.y_train[0]])))
         print("")
+        import pdb;pdb.set_trace()
         self.net.train()
