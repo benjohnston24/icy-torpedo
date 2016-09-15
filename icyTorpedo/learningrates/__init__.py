@@ -1,0 +1,3 @@
+from .FixedRate import (
+        FixedRate,
+        )

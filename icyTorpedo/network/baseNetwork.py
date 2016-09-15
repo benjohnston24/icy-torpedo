@@ -5,6 +5,7 @@
 # Imports
 from icyTorpedo.layers import iterlayers
 from icyTorpedo.costfunctions import SquaredError
+from icyTorpedo.learningrates import FixedRate
 import numpy as np
 
 
@@ -14,19 +15,21 @@ __date__ = 'Thursday 15 September  10:04:49 AEST 2016'
 __license__ = 'MPL v2.0'
 
 
-class networkBase(object):
+class baseNetwork(object):
 
     def __init__(self,
                  targets=None, 
+                 eta=FixedRate(0.01),
                  costfunction=SquaredError,
                  *args, **kwargs):
 
         self.costfunction = costfunction() 
-        self.targets=targets
+        self.targets = targets
+        self.eta = eta
 
     def network_defn(self):
         """Built from Layer classes, ensure the outpu layer is called self.network"""
-        pass
+        pass  # pragma: no cover
 
     def forwardprop(self):
         """Iterate through each of the layers and compute the activations at each node"""
@@ -69,4 +72,18 @@ class networkBase(object):
             layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
 
             w_1 = layer.W
+            layer = layer.input_layer
+
+    def updateweights(self):
+
+        layer = self.network
+
+        # Get the learning rate, if the learning rate changes we only want
+        # to do this once per weight update
+        learning_rate = self.eta()
+
+        while layer.input_layer is not None:
+            layer.W -= learning_rate * layer.dc_dw
+            layer.b -= learning_rate * layer.dc_db
+
             layer = layer.input_layer

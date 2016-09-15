@@ -4,7 +4,7 @@
 
 # Imports
 import unittest
-from icyTorpedo.network import networkBase
+from icyTorpedo.network import baseNetwork
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.linearities import Sigmoid
 import numpy as np
@@ -16,7 +16,7 @@ __date__ = 'Thursday 15 September  10:44:02 AEST 2016'
 __license__ = 'MPL v2.0'
 
 
-class network(networkBase):
+class network(baseNetwork):
 
     def network_defn(self):
 
@@ -29,13 +29,13 @@ class network(networkBase):
             [0.1, 0.4],
             [0.2, 0.5],])
 
-        self.l_hidden.b = np.array([0.3, 0.6])
+        self.l_hidden.b = np.array([[0.3, 0.6]])
 
         self.l_output.W = np.array([
             [0.7],
             [0.8]])
 
-        self.l_output.b = np.array([0.9])
+        self.l_output.b = np.array([[0.9]])
 
         self.network = self.l_output
 
@@ -45,6 +45,10 @@ s = Sigmoid()
 class TestNetwork(unittest.TestCase):
 
     def setUp(self):
+
+        self.reset()
+
+    def reset(self):
         # Target output of network 
         self.target_output = 2.0944 
 
@@ -58,6 +62,8 @@ class TestNetwork(unittest.TestCase):
  
     def test_forward_and_back_prop(self):
 
+        self.reset()
+
         # Execute forward prop
         self.net.forwardprop()
 
@@ -69,6 +75,13 @@ class TestNetwork(unittest.TestCase):
         # Check output layer
         np.testing.assert_equal(self.net.l_output.h, self.expected_output)
         np.testing.assert_equal(self.net.l_output.a, np.array(s(self.expected_output)))
+
+
+    def test_backprop(self):
+
+        self.reset()
+
+        self.net.forwardprop()
 
         # Check back prop
         self.net.backprop()
@@ -101,3 +114,12 @@ class TestNetwork(unittest.TestCase):
                                        np.array([[-0.02323156, -0.02172688], [0,0]]),
                                        decimal=4,
                                        )
+
+    def test_update_weights(self):
+
+        self.reset()
+
+        self.net.forwardprop()
+        self.net.backprop()
+
+        self.net.updateweights()

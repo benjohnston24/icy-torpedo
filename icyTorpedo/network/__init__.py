@@ -1,3 +1,3 @@
-from .networkBase import (
-        networkBase,
+from .baseNetwork import (
+        baseNetwork,
         )
