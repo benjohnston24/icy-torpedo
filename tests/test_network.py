@@ -123,3 +123,29 @@ class TestNetwork(unittest.TestCase):
         self.net.backprop()
 
         self.net.updateweights()
+
+        # Check weights
+
+        np.testing.assert_almost_equal(self.net.network.W,
+                                       np.array([
+                                           [0.7000827],
+                                           [0.8010098]]),
+                                       decimal=3,
+                                       )
+        np.testing.assert_almost_equal(self.net.network.b,
+                                       np.array([
+                                           [0.90138133]]),
+                                       decimal=3,
+                                       )
+
+        np.testing.assert_almost_equal(self.net.l_hidden.W,
+                                       np.array([
+                                           [0.100232316, 0.4],
+                                           [0.200217269, 0.5]]),
+                                       decimal=3,
+                                       )
+        np.testing.assert_almost_equal(self.net.l_hidden.b,
+                                       np.array([
+                                           [0.300232316, 0.600217269]]),
+                                       decimal=3,
+                                       )
