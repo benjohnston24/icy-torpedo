@@ -26,12 +26,9 @@ class TestInputLayer(unittest.TestCase):
 
     def test_input_shape(self):
 
-        test_data = np.ones((5,2))
-        l_in = InputLayer(inputs=test_data)
+        l_in = InputLayer(num_units=2)
 
-        self.assertEqual(l_in.input_shape, 5)
         self.assertEqual(l_in.num_units, 2)
-        self.assertTrue(np.all(l_in.a == test_data))
 
 
 class TestDenseLayer(unittest.TestCase):
@@ -39,7 +36,7 @@ class TestDenseLayer(unittest.TestCase):
     def setUp(self):
 
         test_data = np.ones((5,2))
-        self.l_in = InputLayer(inputs=test_data)
+        self.l_in = InputLayer(num_units=2)
 
     def test_incoming_layer(self):
 
@@ -63,12 +60,13 @@ class TestDenseLayer(unittest.TestCase):
 
         l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=10)
 
-        self.assertEqual(l_hidden.b.shape, (10,))
+        self.assertEqual(l_hidden.b.shape, (1, 10))
 
     def test_activation(self):
         """Test the correct computation of activations using a simple perceptron with known weights"""
 
-        l_in = InputLayer(np.array([[0,1]]))
+        l_in = InputLayer(num_units=2)
+        l_in.set_inputs(np.array([[0,1]]))
         s = Sigmoid()
 
         l_output = DenseLayer(input_layer=l_in, hidden_units=1)
@@ -84,8 +82,7 @@ class TestNetworkLayerOrder(unittest.TestCase):
 
     def setUp(self):
 
-        test_data = np.ones((5,2))
-        self.l_in = InputLayer(inputs=test_data, name="l_in")
+        self.l_in = InputLayer(num_units=2, name="l_in")
         self.l_hidden = DenseLayer(input_layer=self.l_in,
                                    hidden_units=10,
                                    linearity=Sigmoid,

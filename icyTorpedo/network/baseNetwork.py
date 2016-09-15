@@ -21,11 +21,17 @@ class baseNetwork(object):
                  targets=None, 
                  eta=FixedRate(0.01),
                  costfunction=SquaredError,
+                 max_epochs=20,
                  *args, **kwargs):
 
         self.costfunction = costfunction() 
-        self.targets = targets
+        self.targets=targets
         self.eta = eta
+        self.max_epochs = max_epochs
+
+        self.x_train, self.y_train = (None, None)
+        self.x_valid, self.y_valid = (None, None)
+        self.x_test, self.y_test = (None, None)
 
     def network_defn(self):
         """Built from Layer classes, ensure the outpu layer is called self.network"""
@@ -75,6 +81,11 @@ class baseNetwork(object):
             layer = layer.input_layer
 
     def updateweights(self):
+        """Update the weights of the network in each layer:
+
+        W -= eta * dC/dw
+        b -= eta * db/dw
+        """
 
         layer = self.network
 
@@ -87,3 +98,24 @@ class baseNetwork(object):
             layer.b -= learning_rate * layer.dc_db
 
             layer = layer.input_layer
+
+
+    def train(self):
+        """Train the neural network"""
+
+        import pdb;pdb.set_trace()
+        for epoch in range(self.max_epochs):
+
+            self.forwardprop()
+            printable_str = ["%0.4f, " % x for x in self.network.a[0]]
+            print("{:^10}{}".format(epoch, "".join(printable_str)))
+
+            self.backprop()
+            self.updateweights()
+
+    def predict(self, inputs):
+
+        self.l_in.set_inputs(inputs)
+        self.forwardprop()
+
+        return self.network.a

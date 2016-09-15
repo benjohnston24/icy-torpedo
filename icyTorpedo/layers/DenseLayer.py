@@ -39,11 +39,15 @@ class DenseLayer(baseLayer):
         self.num_units = hidden_units
         self.linearity = linearity() 
 
+        self.initialise_weights()
+
+    def initialise_weights(self):
+
         # Weights
         self.W = np.random.randn(self.input_shape, self.num_units) 
 
         # Biases
-        self.b = np.random.randn(self.num_units)
+        self.b = np.random.randn(1, self.num_units)
 
     def h_x(self):
         """Compute the non linearised activations

@@ -20,9 +20,12 @@ class network(baseNetwork):
 
     def network_defn(self):
 
-        self.l_in = InputLayer(inputs=np.array([[1, 0]]), name="Input")
+        self.l_in = InputLayer(num_units=2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
         self.l_output = DenseLayer(input_layer=self.l_hidden, hidden_units=1, name="Output")
+
+        # Set the initial input values
+        self.l_in.set_inputs(np.array([[1, 0]]))
 
         # Construct known weights
         self.l_hidden.W = np.array([

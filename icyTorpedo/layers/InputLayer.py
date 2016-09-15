@@ -18,20 +18,25 @@ class InputLayer(baseLayer):
     Parameters
     -----------
 
-    inputs :  Input values as an np.array 
+    inputs :  Input values as an np.array with dimensions (#samples, #features) 
     name   :  A string of the name for the layer
     """
 
-    def __init__(self, inputs=None, name=None, **kwargs):
+    #def __init__(self, inputs=None, name=None, **kwargs):
+    def __init__(self, num_units=None, name=None, **kwargs):
 
         self.input_layer = None
 
-        if inputs is not None:
-            self.input_shape, self.num_units = inputs.shape
-        else:
-            self.input_shape, self.num_units = (None, None)
+        self.num_units = num_units
 
-        # Activations g(h)
-        self.a = inputs
+        #if inputs is not None:
+        #    self.input_shape, self.num_units = inputs.shape
+        #else:
+        #    self.input_shape, self.num_units = (None, None)
 
         self.name = name
+
+    def set_inputs(self, input_values):
+
+        # Activations g(h)
+        self.a = input_values

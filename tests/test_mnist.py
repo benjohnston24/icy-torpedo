@@ -1,0 +1,51 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+# S.D.G
+
+# Imports
+import unittest
+from icyTorpedo.resources import load_mnist_train_images, \
+        load_mnist_train_labels
+from icyTorpedo.layers import InputLayer, DenseLayer
+from icyTorpedo.network import baseNetwork
+
+__author__ = 'Ben Johnston'
+__revision__ = '0.1'
+__date__ = 'Thursday 15 September  22:41:04 AEST 2016'
+__license__ = 'MPL v2.0'
+
+
+class network(baseNetwork):
+
+    def network_defn(self):
+
+        self.l_in = InputLayer(num_units=28 ** 2, name="Input")
+        self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
+        self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
+
+
+class TestMnistSingle(unittest.TestCase):
+
+    def setUp(self):
+
+        # Load a single image
+        self.image = load_mnist_train_images()[0]
+        self.label = load_mnist_train_labels()[0]
+
+        self.net = network()
+        self.net.network_defn()
+
+        self.net.x_train = self.image.reshape((1, 28 ** 2))
+        self.net.l_in.set_inputs(self.net.x_train)
+        self.net.y_train = self.label.reshape((1, 10))
+        self.net_x_valid = self.net.x_train
+        self.net_y_valid = self.net.y_train
+
+        self.net.targets = self.net.y_train
+
+    def test_memorise_single_sample(self):
+
+        print("Correct value")
+        print("{:^10}{}".format("-", "".join(["%0.4f, " % x for x in self.net.y_train[0]])))
+        print("")
+        self.net.train()
