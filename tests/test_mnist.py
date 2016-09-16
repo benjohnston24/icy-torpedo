@@ -8,6 +8,8 @@ from icyTorpedo.resources import load_mnist_train_images, \
         load_mnist_train_labels
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.network import baseNetwork
+from icyTorpedo.learningrates import FixedRate
+import numpy as np
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -32,7 +34,10 @@ class TestMnistSingle(unittest.TestCase):
         self.image = load_mnist_train_images()[0]
         self.label = load_mnist_train_labels()[0]
 
-        self.net = network()
+        self.net = network(
+                eta=FixedRate(0.1),
+                max_epochs=5000,
+                )
         self.net.network_defn()
 
         self.net.x_train = self.image.reshape((1, 28 ** 2))
@@ -45,8 +50,14 @@ class TestMnistSingle(unittest.TestCase):
 
     def test_memorise_single_sample(self):
 
-        print("Correct value")
-        print("{:^10}{}".format("-", "".join(["%0.4f, " % x for x in self.net.y_train[0]])))
-        print("")
-        import pdb;pdb.set_trace()
+        #print("Correct value")
+        #print("{:^10}{}".format("-", "".join(["%0.4f, " % x for x in self.net.y_train[0]])))
+        #print("")
         self.net.train()
+
+        predictions = self.net.network.a
+
+        np.testing.assert_almost_equal(predictions,
+                np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]),
+                decimal=1,
+                )

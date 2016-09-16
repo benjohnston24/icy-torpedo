@@ -20,7 +20,8 @@ class Sigmoid(baseLinearity):
     def __init__(self, *args, **kwargs):
         super(Sigmoid, self).__init__(*args, **kwargs)
 
-    def __call__(self, z):
+    @classmethod
+    def __call__(cls, z):
         """Compute the sigmoid function
         
         g(z) =        1
@@ -32,10 +33,11 @@ class Sigmoid(baseLinearity):
 
         return 1.0 / (1.0 + np.exp(-z))
 
-    def prime(self, z):
+    @classmethod
+    def prime(cls, z):
         """Compute the derivative of the sigmoid
 
         g(z) = g(z)(1 - g(z))
         """
 
-        return self.__call__(z) * (1 - self.__call__(z))
+        return cls.__call__(z) * (1 - cls.__call__(z))

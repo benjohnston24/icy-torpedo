@@ -22,12 +22,14 @@ class baseNetwork(object):
                  eta=FixedRate(0.01),
                  costfunction=SquaredError,
                  max_epochs=20,
+                 verbose=False,
                  *args, **kwargs):
 
         self.costfunction = costfunction() 
         self.targets=targets
         self.eta = eta
         self.max_epochs = max_epochs
+        self.verbose = verbose
 
         self.x_train, self.y_train = (None, None)
         self.x_valid, self.y_valid = (None, None)
@@ -103,15 +105,16 @@ class baseNetwork(object):
     def train(self):
         """Train the neural network"""
 
-        import pdb;pdb.set_trace()
         for epoch in range(self.max_epochs):
 
             self.forwardprop()
-            printable_str = ["%0.4f, " % x for x in self.network.a[0]]
-            print("{:^10}{}".format(epoch, "".join(printable_str)))
 
             self.backprop()
             self.updateweights()
+
+        if self.verbose:
+            printable_str = ["%0.4f, " % x for x in self.network.a[0]]
+            print("{:^10}{}".format(epoch, "".join(printable_str)))
 
     def predict(self, inputs):
 

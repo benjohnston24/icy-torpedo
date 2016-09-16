@@ -18,7 +18,8 @@ class SquaredError(baseCostFunction):
     def __init__(self, *args, **kwargs):
         super(SquaredError, self).__init__(*args, **kwargs)
 
-    def __call__(self, output, target):
+    @staticmethod
+    def __call__(output, target):
         """Compute the squared error
 
         sqe = 0.5 * ((target - output) ** 2)
@@ -26,7 +27,8 @@ class SquaredError(baseCostFunction):
 
         return 0.5 * ((target - output) ** 2)
 
-    def prime(self, output, target):
+    @staticmethod
+    def prime(output, target):
         """Compute the derivative of the squared error
 
         sqe_prime = output - target

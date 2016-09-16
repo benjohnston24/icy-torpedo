@@ -44,11 +44,12 @@ class DenseLayer(baseLayer):
     def initialise_weights(self):
 
         # Weights
-        # TODO Scale between -0.5 and 0.5
-        self.W = np.random.randn(self.input_shape, self.num_units) 
+        # Produce a normal distribution of mean 0 and standard deviation 0.4
+        self.W = np.random.randn(self.input_shape, self.num_units) * 0.4 
 
         # Biases
-        self.b = np.random.randn(1, self.num_units)
+        # Produce a normal distribution of mean 0 and standard deviation 0.4
+        self.b = np.random.randn(1, self.num_units) * 0.4
 
     def h_x(self):
         """Compute the non linearised activations
