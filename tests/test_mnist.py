@@ -17,31 +17,26 @@ __date__ = 'Thursday 15 September  22:41:04 AEST 2016'
 __license__ = 'MPL v2.0'
 
 
-class network(baseNetwork):
+class TestMnistSingle(unittest.TestCase):
 
-    def network_defn(self):
-
+    def setUp(self):
         self.l_in = InputLayer(num_units=28 ** 2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
         self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
 
 
-class TestMnistSingle(unittest.TestCase):
-
-    def setUp(self):
-
         # Load a single image
         self.image = load_mnist_train_images()[0]
         self.label = load_mnist_train_labels()[0]
 
-        self.net = network(
+        self.net = baseNetwork(
+                network_layers =[self.l_in, self.l_hidden, self.network],
                 eta=FixedRate(0.1),
-                max_epochs=5000,
+                max_epochs=1000,
                 )
-        self.net.network_defn()
 
         self.net.x_train = self.image.reshape((1, 28 ** 2))
-        self.net.l_in.set_inputs(self.net.x_train)
+        self.l_in.set_inputs(self.net.x_train)
         self.net.y_train = self.label.reshape((1, 10))
         self.net_x_valid = self.net.x_train
         self.net_y_valid = self.net.y_train
@@ -55,7 +50,7 @@ class TestMnistSingle(unittest.TestCase):
         #print("")
         self.net.train()
 
-        predictions = self.net.network.a
+        predictions = self.net.output_layer.a
 
         np.testing.assert_almost_equal(predictions,
                 np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]),

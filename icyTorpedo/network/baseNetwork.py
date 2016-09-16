@@ -18,6 +18,7 @@ __license__ = 'MPL v2.0'
 class baseNetwork(object):
 
     def __init__(self,
+                 network_layers=None,
                  targets=None, 
                  eta=FixedRate(0.01),
                  costfunction=SquaredError,
@@ -25,23 +26,29 @@ class baseNetwork(object):
                  verbose=False,
                  *args, **kwargs):
 
-        self.costfunction = costfunction() 
+        # Get the architecture of the network
+        self.network_layers = network_layers
+
+        # Define the output layer as the last layer in the list
+        self.output_layer = self.network_layers[-1]
+        # Define the input layer as the first layer in the list
+        self.input_layer = self.network_layers[0]
+
+        # Define characteristics of the network
+        self.cost_function = costfunction() 
         self.targets=targets
         self.eta = eta
         self.max_epochs = max_epochs
         self.verbose = verbose
 
+        # Reserve some variables for storing training data
         self.x_train, self.y_train = (None, None)
         self.x_valid, self.y_valid = (None, None)
         self.x_test, self.y_test = (None, None)
 
-    def network_defn(self):
-        """Built from Layer classes, ensure the outpu layer is called self.network"""
-        pass  # pragma: no cover
-
     def forwardprop(self):
         """Iterate through each of the layers and compute the activations at each node"""
-        for layer in iterlayers(self.network):
+        for layer in iterlayers(self.output_layer):
             layer.a_h() # Compute the activations
 
     def backprop(self):
@@ -61,9 +68,9 @@ class baseNetwork(object):
         """
 
         # Start at the output layer
-        layer = self.network
-        delta = self.costfunction.prime(output=layer.a, target=self.targets) * \
-                self.network.linearity.prime(layer.h)
+        layer = self.output_layer
+        delta = self.cost_function.prime(output=layer.a, target=self.targets) * \
+                self.output_layer.linearity.prime(layer.h)
         layer.delta = delta
         layer.dc_db = delta
         layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
@@ -89,7 +96,7 @@ class baseNetwork(object):
         b -= eta * db/dw
         """
 
-        layer = self.network
+        layer = self.output_layer
 
         # Get the learning rate, if the learning rate changes we only want
         # to do this once per weight update
@@ -103,17 +110,20 @@ class baseNetwork(object):
 
 
     def train(self):
-        """Train the neural network"""
+        """Train the neural network
+        
+        Simple version, apply each of the training examples in the same order per iteration
+        
+        """
 
         for epoch in range(self.max_epochs):
 
             self.forwardprop()
-
             self.backprop()
             self.updateweights()
 
         if self.verbose:
-            printable_str = ["%0.4f, " % x for x in self.network.a[0]]
+            printable_str = ["%0.4f, " % x for x in self.output_layer.a[0]]
             print("{:^10}{}".format(epoch, "".join(printable_str)))
 
     def predict(self, inputs):
@@ -121,4 +131,4 @@ class baseNetwork(object):
         self.l_in.set_inputs(inputs)
         self.forwardprop()
 
-        return self.network.a
+        return self.output_layer.a
