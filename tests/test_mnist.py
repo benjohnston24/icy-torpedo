@@ -5,7 +5,7 @@
 # Imports
 import unittest
 from icyTorpedo.resources import load_mnist_train_images, \
-        load_mnist_train_labels
+        load_mnist_train_labels, split_training_data
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.learningrates import FixedRate
@@ -43,6 +43,7 @@ class TestMnistSingle(unittest.TestCase):
 
         self.net.targets = self.net.y_train
 
+    @unittest.skip("")
     def test_memorise_single_sample(self):
 
         #print("Correct value")
@@ -56,3 +57,33 @@ class TestMnistSingle(unittest.TestCase):
                 np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]),
                 decimal=1,
                 )
+
+
+class TestMnistDouble(unittest.TestCase):
+
+    def setUp(self):
+        self.l_in = InputLayer(num_units=28 ** 2, name="Input")
+        self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
+        self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
+
+
+        # Load a single image
+        self.image = load_mnist_train_images()[:2]
+        self.image = self.image.reshape((-1, 28 ** 2))
+        self.label = load_mnist_train_labels()[:2]
+
+        # Split into training and validation tests
+        x_train, y_train, x_valid, y_valid = split_training_data(self.image, self.label)
+
+        self.net = baseNetwork(
+                network_layers =[self.l_in, self.l_hidden, self.network],
+                train_data=(x_train, y_train),
+                valid_data=(x_valid, y_valid),
+                eta=FixedRate(0.1),
+                max_epochs=1000,
+                )
+
+
+    def test_memorise_two_samples(self):
+
+        self.net.train()

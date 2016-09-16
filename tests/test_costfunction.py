@@ -55,6 +55,15 @@ class TestSquaredError(unittest.TestCase):
 
         self.assertEqual(c(output=-2, target=4), 18)
 
+    def test_squared_error_list(self):
+
+        target_list = np.array([0.1, 0.2])
+        output_list = np.array([0.3, 0.4])
+
+        c = SquaredError()
+
+        self.assertEqual(c(output=output_list, target=target_list), 0.04)
+
     def test_squared_prime_1(self):
 
         c = SquaredError()

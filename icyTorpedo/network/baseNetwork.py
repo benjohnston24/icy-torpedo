@@ -11,7 +11,7 @@ import numpy as np
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
-__date__ = 'Thursday 15 September  10:04:49 AEST 2016'
+__date__ = 'Friday 16 September  20:55:50 AEST 2016'
 __license__ = 'MPL v2.0'
 
 
@@ -20,9 +20,13 @@ class baseNetwork(object):
     def __init__(self,
                  network_layers=None,
                  targets=None, 
+                 train_data=(None, None),
+                 valid_data=(None, None),
+                 test_data=(None, None),
                  eta=FixedRate(0.01),
                  costfunction=SquaredError,
                  max_epochs=20,
+                 regression=False,
                  verbose=False,
                  *args, **kwargs):
 
@@ -31,8 +35,15 @@ class baseNetwork(object):
 
         # Define the output layer as the last layer in the list
         self.output_layer = self.network_layers[-1]
+
+        # Determine the input layer by traversing the inputs of the output layer
+        layer = self.output_layer
+
+        while layer.input_layer is not None:
+            layer = layer.input_layer
+
         # Define the input layer as the first layer in the list
-        self.input_layer = self.network_layers[0]
+        self.input_layer = layer 
 
         # Define characteristics of the network
         self.cost_function = costfunction() 
@@ -42,16 +53,19 @@ class baseNetwork(object):
         self.verbose = verbose
 
         # Reserve some variables for storing training data
-        self.x_train, self.y_train = (None, None)
-        self.x_valid, self.y_valid = (None, None)
-        self.x_test, self.y_test = (None, None)
+        self.x_train, self.y_train = train_data 
+        self.x_valid, self.y_valid = valid_data 
+        self.x_test, self.y_test = test_data 
+
+        # Flag to indicate if the problem is a regression problem
+        self.regression = regression
 
     def forwardprop(self):
         """Iterate through each of the layers and compute the activations at each node"""
         for layer in iterlayers(self.output_layer):
             layer.a_h() # Compute the activations
 
-    def backprop(self):
+    def backprop(self, targets):
         """Execute back propogation
         
         First compute the rate of the error at the output 
@@ -69,7 +83,7 @@ class baseNetwork(object):
 
         # Start at the output layer
         layer = self.output_layer
-        delta = self.cost_function.prime(output=layer.a, target=self.targets) * \
+        delta = self.cost_function.prime(output=layer.a, target=targets) * \
                 self.output_layer.linearity.prime(layer.h)
         layer.delta = delta
         layer.dc_db = delta
@@ -118,9 +132,47 @@ class baseNetwork(object):
 
         for epoch in range(self.max_epochs):
 
-            self.forwardprop()
-            self.backprop()
-            self.updateweights()
+            train_err = 0
+
+            # Implement training
+            for x_train, y_train in zip(self.x_train, self.y_train):
+
+                x_train = x_train.reshape((1, -1))
+                y_train = y_train.reshape((1, -1))
+
+                # Apply the sample
+                self.input_layer.set_inputs(x_train)
+
+                # Update the weights using training set
+                self.forwardprop()
+                self.backprop(y_train)
+                self.updateweights()
+
+                # Calculate the training error
+                train_pred = self.predict(x_train)
+
+                train_err += self.cost_function(output=train_pred,
+                                                target=y_train)
+
+            valid_err = 0
+            correct_class = 0
+
+            # Check against validation set
+            for x_valid, y_valid in zip(self.x_valid, self.y_valid):
+
+                x_valid = x_valid.reshape((1, -1))
+                y_valid = y_valid.reshape((1, -1))
+                
+                valid_pred = self.predict(x_valid)
+
+                valid_err += self.cost_function(output=valid_pred,
+                                                target=y_valid)
+                 
+                # If this is a categorisation problem determine if correctly labeled
+                if not self.regression and self.output_layer.a.argmax() == y_train.argmax():
+                    correct_class += 1
+
+            import pdb;pdb.set_trace()
 
         if self.verbose:
             printable_str = ["%0.4f, " % x for x in self.output_layer.a[0]]
@@ -128,7 +180,7 @@ class baseNetwork(object):
 
     def predict(self, inputs):
 
-        self.l_in.set_inputs(inputs)
+        self.input_layer.set_inputs(inputs)
         self.forwardprop()
 
         return self.output_layer.a

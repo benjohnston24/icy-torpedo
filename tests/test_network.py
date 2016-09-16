@@ -59,6 +59,11 @@ class TestNetwork(unittest.TestCase):
             (s(0.4) * 0.7) + (s(1) * 0.8) + 0.9]])
 
  
+    def test_correct_input_output_layers(self):
+
+        self.assertEqual(self.net.output_layer, self.output_layer)
+        self.assertEqual(self.net.input_layer, self.l_in)
+
     def test_forward_and_back_prop(self):
 
         self.reset()
@@ -83,7 +88,7 @@ class TestNetwork(unittest.TestCase):
         self.net.forwardprop()
 
         # Check back prop
-        self.net.backprop()
+        self.net.backprop(self.target_output)
 
         # Check output layer
         # delta = (s(1.904) - 2.0944) * s(1.904) * (1 - s(1.904)) 
@@ -119,7 +124,7 @@ class TestNetwork(unittest.TestCase):
         self.reset()
 
         self.net.forwardprop()
-        self.net.backprop()
+        self.net.backprop(self.target_output)
 
         self.net.updateweights()
 
