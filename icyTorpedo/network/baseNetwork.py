@@ -7,12 +7,19 @@ from icyTorpedo.layers import iterlayers
 from icyTorpedo.costfunctions import SquaredError
 from icyTorpedo.learningrates import FixedRate
 import numpy as np
+import os
+import time
 
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
 __date__ = 'Friday 16 September  20:55:50 AEST 2016'
 __license__ = 'MPL v2.0'
+
+
+DEFAULT_LOG_EXTENSION = '.log'
+DEFAULT_PKL_EXTENSION = '.pkl'
+LINE = "-" * 156
 
 
 class baseNetwork(object):
@@ -25,9 +32,12 @@ class baseNetwork(object):
                  test_data=(None, None),
                  eta=FixedRate(0.01),
                  costfunction=SquaredError,
-                 max_epochs=20,
+                 max_epochs=2000,
+                 patience=100,
                  regression=False,
+                 name='neuralNet',
                  verbose=False,
+                 log_data=True,
                  *args, **kwargs):
 
         # Get the architecture of the network
@@ -50,7 +60,10 @@ class baseNetwork(object):
         self.targets=targets
         self.eta = eta
         self.max_epochs = max_epochs
+        self.patience = patience
         self.verbose = verbose
+        self.log_data = False
+        self.name = name
 
         # Reserve some variables for storing training data
         self.x_train, self.y_train = train_data 
@@ -59,6 +72,26 @@ class baseNetwork(object):
 
         # Flag to indicate if the problem is a regression problem
         self.regression = regression
+
+        # Prepare the logfile
+        self._prepare_log()
+
+    def __str__(self):
+
+        output = "Neural Network: %s\n" % self.name
+        output += "Architecture:\n"
+
+        for layer in self.network_layers:
+            output += "%s\n" % str(layer)
+
+        output += "Cost Function: %s\n" % str(self.cost_function)
+        output += "Learning Rate: %s\n" % str(self.eta)
+        output += "x_train shape: %s\ty_train shape: %s\n" % \
+                (self.x_train.shape, self.y_train.shape)
+        output += "x_valid shape: %s\ty_valid shape: %s\n" % \
+                (self.x_valid.shape, self.y_valid.shape)
+
+        return output
 
     def forwardprop(self):
         """Iterate through each of the layers and compute the activations at each node"""
@@ -108,6 +141,17 @@ class baseNetwork(object):
 
         W -= eta * dC/dw
         b -= eta * db/dw
+
+        Parameters
+        -----------
+
+        None
+
+        Returns
+        -----------
+
+        The current learning rate used to update the weights
+
         """
 
         layer = self.output_layer
@@ -122,6 +166,8 @@ class baseNetwork(object):
 
             layer = layer.input_layer
 
+        return learning_rate
+
 
     def train(self):
         """Train the neural network
@@ -130,7 +176,13 @@ class baseNetwork(object):
         
         """
 
+        min_valid_err = np.inf
+        best_epoch = 0
+
         for epoch in range(self.max_epochs):
+
+            # Time the iteration 
+            start_time = time.time()
 
             train_err = 0
 
@@ -146,7 +198,7 @@ class baseNetwork(object):
                 # Update the weights using training set
                 self.forwardprop()
                 self.backprop(y_train)
-                self.updateweights()
+                eta = self.updateweights()
 
                 # Calculate the training error
                 train_pred = self.predict(x_train)
@@ -172,11 +224,43 @@ class baseNetwork(object):
                 if not self.regression and self.output_layer.a.argmax() == y_train.argmax():
                     correct_class += 1
 
-            import pdb;pdb.set_trace()
+            # End of the iteration
+            finish_time = time.time()
 
-        if self.verbose:
-            printable_str = ["%0.4f, " % x for x in self.output_layer.a[0]]
-            print("{:^10}{}".format(epoch, "".join(printable_str)))
+            if valid_err < min_valid_err:
+                improvement = "*"
+                min_valid_err = valid_err
+                best_epoch = epoch
+            else:
+                improvement = ""
+
+            iteration_record = \
+                "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|".format(
+                    epoch,
+                    "%0.6f" % train_err,
+                    "%0.6f" % valid_err,
+                    "%0.6f" % (np.cast['float32'](valid_err) / np.cast['float32'](train_err)),
+                    "%0.6f" % (finish_time - start_time),
+                    improvement,
+                    "%0.6E" % eta)
+
+            if not self.regression:
+                iteration_record += "{:^20}|".format(
+                        float(correct_class) / float(self.x_valid.shape[0]) * 100)
+
+            self.log(iteration_record)
+
+            # Check for early termination
+            if (epoch - best_epoch) > self.patience:
+
+                self.log("Early Stopping")
+                self.log("Best validation error %0.6f @ epoch %d" %
+                        (min_valid_err, best_epoch))
+
+        if not self.regression:
+            return train_err, valid_err, correct_class
+        else:
+            return train_err, valid_err, None 
 
     def predict(self, inputs):
 
@@ -184,3 +268,32 @@ class baseNetwork(object):
         self.forwardprop()
 
         return self.output_layer.a
+
+    # Logging functionality
+    def _prepare_log(self):
+        # Data logging
+        # If the log already exists append a .x to the end of the file
+        self.log_extension = DEFAULT_LOG_EXTENSION
+        self.save_params_extension = DEFAULT_PKL_EXTENSION
+        log_basename = self.name
+        # log_basename = "%s-%d" % (log_name, hidden_units)
+        if os.path.exists("{}{}".format(log_basename, self.log_extension)):
+            # See if any other logs exist of the .x format
+            log_iter = 0
+            while os.path.exists("{}{}.{}".format(log_basename, self.log_extension, log_iter)):
+                log_iter += 1
+
+            self.log_filename = "{}{}.{}".format(log_basename, self.log_extension, log_iter)
+            self.save_params_filename = "{}{}.{}".format(log_basename, self.save_params_extension, log_iter)
+        else:
+            self.log_filename = log_basename + self.log_extension
+            self.save_params_filename = log_basename + self.save_params_extension
+
+    # Log method
+    def log(self, msg):
+        if self.verbose:
+            print(msg)
+
+        if self.log_data:
+            with open(self.log_filename, "a") as f:
+                f.write("%s\n" % msg)

@@ -18,7 +18,7 @@ __license__ = 'MPL v2.0'
 class TestBaseActivation(unittest.TestCase):
 
     def test_name(self):
-        g = baseLinearity('g')
+        g = baseLinearity(name='g')
 
         self.assertEqual(g.name, 'g')
 
@@ -26,7 +26,7 @@ class TestBaseActivation(unittest.TestCase):
 class TestSigmoid(unittest.TestCase):
 
     def test_sigmoid_name(self):
-        g = Sigmoid('g')
+        g = Sigmoid(name='g')
 
         self.assertEqual(g.name, 'g')
 

@@ -33,8 +33,13 @@ class DenseLayer(baseLayer):
     def __init__(self, 
             hidden_units, 
             linearity=Sigmoid,
+            name="Dense Layer",
+            *args,
             **kwargs):
-        super(DenseLayer, self).__init__(**kwargs)
+        super(DenseLayer, self).__init__(
+                name=name,
+                *args, 
+                **kwargs)
 
         self.num_units = hidden_units
         self.linearity = linearity() 
@@ -76,3 +81,8 @@ class DenseLayer(baseLayer):
         """
         self.a = self.linearity(self.h_x())
         return self.a
+
+    def __str__(self):
+
+        return "%s: %d [linearity: %s]" % \
+                (self.name, self.num_units, self.linearity.name)

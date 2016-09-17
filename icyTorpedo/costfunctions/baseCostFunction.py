@@ -24,5 +24,6 @@ class baseCostFunction(object):
         """Override this method with the derviative of the cost function"""
         pass  # pragma: no cover 
 
+    def __str__(self):
 
-
+        return self.name

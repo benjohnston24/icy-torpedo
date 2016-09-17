@@ -17,8 +17,10 @@ __license__ = 'MPL v2.0'
 class Sigmoid(baseLinearity):
     """Sigmoid function activation class"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name="Sigmoid", *args, **kwargs):
         super(Sigmoid, self).__init__(*args, **kwargs)
+
+        self.name = name
 
     @classmethod
     def __call__(cls, z):

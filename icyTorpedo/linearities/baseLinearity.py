@@ -16,7 +16,7 @@ __license__ = 'MPL v2.0'
 
 class baseLinearity(object):
 
-    def __init__(self, name="baseActivation", *args, **kwargs):
+    def __init__(self, name="baseLinearity", *args, **kwargs):
         self.name = name
 
     def __call__(self):

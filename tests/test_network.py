@@ -4,10 +4,12 @@
 
 # Imports
 import unittest
+from unittest.mock import MagicMock, patch, mock_open
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.linearities import Sigmoid
 import numpy as np
+from io import StringIO
 
 
 __author__ = 'Ben Johnston'
@@ -17,6 +19,11 @@ __license__ = 'MPL v2.0'
 
 
 s = Sigmoid()
+log_file_mock_one_file = MagicMock(side_effect=[True, False])
+log_file_mock_two_files = MagicMock(side_effect=[True, True, False])
+mock_pickle = MagicMock()
+mock_file_open = mock_open()
+
 
 class TestNetwork(unittest.TestCase):
 
@@ -52,6 +59,9 @@ class TestNetwork(unittest.TestCase):
         self.net = baseNetwork(
                 network_layers = [self.l_in, self.l_hidden, self.output_layer],
                 targets=self.target_output,
+                name='baseNetwork',
+                log_data=False,
+                verbose=False,
                 )
 
         # Expected output after forward propr 1.904
@@ -153,3 +163,77 @@ class TestNetwork(unittest.TestCase):
                                            [0.300232316, 0.600217269]]),
                                        decimal=3,
                                        )
+
+    def test_log_file_name(self):
+        """Check the log filenames are correctly established"""
+        self.assertEqual(self.net.log_filename, 'baseNetwork.log')
+        self.assertEqual(self.net.save_params_filename, 'baseNetwork.pkl')
+
+    @patch('os.path.exists', log_file_mock_one_file)
+    def test_prepare_log_exists(self):
+        """Check the log filenames are correctly established - a log of the same name already exists"""
+
+        self.reset()
+
+        self.assertEqual(self.net.log_filename, "baseNetwork.log.0", 
+                         "incorrect log filename")
+        self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.0", 
+                         "incorrect pickle filename")
+
+    @patch('os.path.exists', log_file_mock_two_files)
+    def test_prepare_log_exists(self):
+        """Check the log filenames are correctly established - two logs of the same name already exist"""
+
+        self.reset()
+        self.assertEqual(self.net.log_filename, "baseNetwork.log.1", 
+                         "incorrect log filename")
+        self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.1", 
+                         "incorrect pickle filename")
+
+    def test_log_corrects_data(self):
+        """Check the correct data is stored in the log"""
+
+        self.net.log_data = True
+        mock_log = mock_open()
+
+        with patch('builtins.open', mock_log):
+            self.net.log('test some info')
+
+        mock_log.assert_called_with(self.net.log_filename, 'a')
+        handle = mock_log()
+        handle.write.assert_called_once_with('test some info\n')
+
+    def test_str(self):
+
+        self.reset()
+
+        self.net.network_layers = ["Input", "Hidden", "Output"]
+        self.net.cost_function = "SquaredError"
+        self.net.eta = 'FixedRate: 1.000000E-03'
+
+        self.net.x_train = np.zeros((128, 28 ** 2))
+        self.net.y_train = np.zeros((128, 10))
+
+        self.net.x_valid = np.zeros((78, 28 ** 2))
+        self.net.y_valid = np.zeros((78, 10))
+
+        expected_output = "Neural Network: baseNetwork\n"\
+                "Architecture:\nInput\nHidden\nOutput\n"\
+                "Cost Function: SquaredError\n"\
+                "Learning Rate: FixedRate: 1.000000E-03\n"\
+                "x_train shape: (128, 784)\ty_train shape: (128, 10)\n"\
+                "x_valid shape: (78, 784)\ty_valid shape: (78, 10)\n"\
+
+        self.assertEqual(str(self.net), expected_output)
+
+    @patch('sys.stdout', new_callable=StringIO) 
+    def test_verbose(self, mock_stdout):
+
+        self.reset()
+
+        self.net.verbose = True
+
+        self.net.log("mock stdout")
+
+        self.assertEqual("mock stdout\n", mock_stdout.getvalue())
+

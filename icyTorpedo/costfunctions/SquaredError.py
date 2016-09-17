@@ -15,8 +15,11 @@ __license__ = 'MPL v2.0'
 
 class SquaredError(baseCostFunction):
 
-    def __init__(self, *args, **kwargs):
-        super(SquaredError, self).__init__(*args, **kwargs)
+    def __init__(self, name="SquaredError", *args, **kwargs):
+        super(SquaredError, self).__init__(
+                name=name,
+                *args, 
+                **kwargs)
 
     @staticmethod
     def __call__(output, target):

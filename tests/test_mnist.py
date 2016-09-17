@@ -17,13 +17,12 @@ __date__ = 'Thursday 15 September  22:41:04 AEST 2016'
 __license__ = 'MPL v2.0'
 
 
-class TestMnistSingle(unittest.TestCase):
+class TestMnistSingleSample(unittest.TestCase):
 
     def setUp(self):
         self.l_in = InputLayer(num_units=28 ** 2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
         self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
-
 
         # Load a single image
         self.image = load_mnist_train_images()[0]
@@ -33,23 +32,20 @@ class TestMnistSingle(unittest.TestCase):
                 network_layers =[self.l_in, self.l_hidden, self.network],
                 eta=FixedRate(0.1),
                 max_epochs=1000,
+                log_data=False,
+                verbose=False,
                 )
 
         self.net.x_train = self.image.reshape((1, 28 ** 2))
         self.l_in.set_inputs(self.net.x_train)
         self.net.y_train = self.label.reshape((1, 10))
-        self.net_x_valid = self.net.x_train
-        self.net_y_valid = self.net.y_train
+        self.net.x_valid = self.net.x_train
+        self.net.y_valid = self.net.y_train
 
-        self.net.targets = self.net.y_train
-
-    @unittest.skip("")
+    #@unittest.skip("Time consuming test - run sparingly")
     def test_memorise_single_sample(self):
 
-        #print("Correct value")
-        #print("{:^10}{}".format("-", "".join(["%0.4f, " % x for x in self.net.y_train[0]])))
-        #print("")
-        self.net.train()
+        train_err, valid_err, correct_class = self.net.train()
 
         predictions = self.net.output_layer.a
 
@@ -58,14 +54,20 @@ class TestMnistSingle(unittest.TestCase):
                 decimal=1,
                 )
 
+        np.testing.assert_almost_equal(train_err, 0,
+                decimal=1)
 
-class TestMnistDouble(unittest.TestCase):
+        np.testing.assert_almost_equal(valid_err, 0,
+                decimal=1)
+
+        self.assertEqual(correct_class, 1)
+
+class TestMnistDoubleSample(unittest.TestCase):
 
     def setUp(self):
         self.l_in = InputLayer(num_units=28 ** 2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
         self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
-
 
         # Load a single image
         self.image = load_mnist_train_images()[:2]
@@ -81,9 +83,11 @@ class TestMnistDouble(unittest.TestCase):
                 valid_data=(x_valid, y_valid),
                 eta=FixedRate(0.1),
                 max_epochs=1000,
+                log_data=False,
+                verbose=False,
                 )
 
 
     def test_memorise_two_samples(self):
 
-        self.net.train()
+        train_err, valid_err, correct_class = self.net.train()

@@ -30,6 +30,13 @@ class TestInputLayer(unittest.TestCase):
 
         self.assertEqual(l_in.num_units, 2)
 
+    def test_cast_to_string(self):
+
+        l_in = InputLayer(name="Input", num_units=2)
+
+        self.assertEqual(str(l_in),
+            'Input: 2')
+
 
 class TestDenseLayer(unittest.TestCase):
 
@@ -76,6 +83,14 @@ class TestDenseLayer(unittest.TestCase):
 
         self.assertEqual(l_output.h_x(), 0.4)
         self.assertEqual(l_output.a_h(), s(0.4))
+
+    def test_cast_to_string(self):
+
+        l_in = InputLayer(num_units=2)
+        l_output = DenseLayer(name="Hidden Layer", input_layer=l_in, hidden_units=1)
+
+        self.assertEqual(str(l_output),
+            "Hidden Layer: 1 [linearity: Sigmoid]")
 
 
 class TestNetworkLayerOrder(unittest.TestCase):

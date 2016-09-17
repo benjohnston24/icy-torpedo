@@ -20,3 +20,4 @@ class TestFixedRate(unittest.TestCase):
         eta = FixedRate(0.01)
 
         self.assertEqual(eta(), 0.01)
+        self.assertEqual(str(eta), 'FixedRate: 1.000000E-02')

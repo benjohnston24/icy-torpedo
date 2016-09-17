@@ -21,6 +21,7 @@ class TestBaseCostFunctions(unittest.TestCase):
         c = baseCostFunction(name='C')
 
         self.assertEqual(c.name, 'C')
+        self.assertEqual(str(c), 'C')
 
 
 class TestSquaredError(unittest.TestCase):

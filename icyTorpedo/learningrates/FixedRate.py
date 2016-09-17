@@ -32,8 +32,13 @@ class FixedRate(object):
 
     """
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, value, name="FixedRate", *args, **kwargs):
+        self.name = name
         self.value = value
 
     def __call__(self):
         return self.value
+
+    def __str__(self):
+
+        return "%s: %E" % (self.name, self.value)

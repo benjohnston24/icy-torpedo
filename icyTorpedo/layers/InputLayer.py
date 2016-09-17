@@ -23,16 +23,11 @@ class InputLayer(baseLayer):
     """
 
     #def __init__(self, inputs=None, name=None, **kwargs):
-    def __init__(self, num_units=None, name=None, **kwargs):
+    def __init__(self, num_units=None, name="Input Layer", **kwargs):
 
         self.input_layer = None
 
         self.num_units = num_units
-
-        #if inputs is not None:
-        #    self.input_shape, self.num_units = inputs.shape
-        #else:
-        #    self.input_shape, self.num_units = (None, None)
 
         self.name = name
 
@@ -40,3 +35,7 @@ class InputLayer(baseLayer):
 
         # Activations g(h)
         self.a = input_values
+
+    def __str__(self):
+
+        return "%s: %d" % (self.name, self.num_units)
