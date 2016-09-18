@@ -12,6 +12,7 @@ from icyTorpedo.resources import load_mnist_train_images, \
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.learningrates import FixedRate
+from icyTorpedo.linearities import Linear
 import numpy as np
 
 
@@ -37,16 +38,20 @@ def _options(*args, **kwargs):
 
 
 def _main(*args, **kwargs):
-    args = options()
+    args = _options()
 
-    train_images = load_mnist_train_images()
-    train_labels = load_mnist_train_labels()
+    train_images = load_mnist_train_images()[::2]
+    train_images = train_images.reshape((-1, 28 ** 2))
+    train_labels = load_mnist_train_labels()[::2]
 
-    x_train, y_train, x_valid, y_valid = split_training_data(images, labels)
+    x_train, y_train, x_valid, y_valid = split_training_data(train_images, train_labels)
 
-    l_input = InputLayer(num_units=28 ** 2, name="Input"),
-    l_hidden = DenseLayer(input_layer=l_input, num_units=args.nodes, name="Hidden"),
-    l_output = DenseLayer(input_layer=l_hidden, num_units=10, name="Output")
+    l_input = InputLayer(num_units=28 ** 2, name="Input")
+    l_hidden = DenseLayer(input_layer=l_input, num_units=args.nodes, name="Hidden")
+    l_output = DenseLayer(input_layer=l_hidden, 
+                          num_units=10, 
+                          linearity=Linear,
+                          name="Output")
 
     net = baseNetwork(
             network_layers=[l_input, l_hidden, l_output],
@@ -54,6 +59,8 @@ def _main(*args, **kwargs):
             valid_data=(x_valid, y_valid),
             max_epochs=args.epochs,
             name=args.name,
+            verbose=True,
+            log_data=True,
             )
 
     # Log the descriptor

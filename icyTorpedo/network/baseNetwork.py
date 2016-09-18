@@ -9,6 +9,7 @@ from icyTorpedo.learningrates import FixedRate
 import numpy as np
 import os
 import time
+from sklearn.utils import shuffle
 
 
 __author__ = 'Ben Johnston'
@@ -36,7 +37,7 @@ class baseNetwork(object):
                  regression=False,
                  name='neuralNet',
                  verbose=False,
-                 log_data=True,
+                 log_data=False,
                  *args, **kwargs):
 
         # Get the architecture of the network
@@ -60,7 +61,7 @@ class baseNetwork(object):
         self.max_epochs = max_epochs
         self.patience = patience
         self.verbose = verbose
-        self.log_data = False
+        self.log_data = log_data 
         self.name = name
 
         # Reserve some variables for storing training data
@@ -82,12 +83,15 @@ class baseNetwork(object):
         for layer in self.network_layers:
             output += "%s\n" % str(layer)
 
+        output += "Regression: %s\n" % str(self.regression)
         output += "Cost Function: %s\n" % str(self.cost_function)
         output += "Learning Rate: %s\n" % str(self.eta)
         output += "x_train shape: %s\ty_train shape: %s\n" % \
                 (self.x_train.shape, self.y_train.shape)
         output += "x_valid shape: %s\ty_valid shape: %s\n" % \
                 (self.x_valid.shape, self.y_valid.shape)
+        output += "Max Epochs: %d\n" % self.max_epochs
+        output += "Patience: %d\n" % self.patience
 
         return output
 
@@ -166,6 +170,25 @@ class baseNetwork(object):
 
         return learning_rate
 
+    def _prepare_train_header(self):
+        """Log the required information e.g. column headings prior to training"""
+
+        header = \
+             "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|".format(
+                 "Epoch",
+                 "Train Error",
+                 "Valid Error",
+                 "Valid / Train Error",
+                 "Time",
+                 "Best Error",
+                 "Learning Rate",
+                 )
+
+        if not self.regression:
+            header += "{:^20}|".format("Accuracy (%)")
+
+        return header
+
 
     def train(self):
         """Train the neural network
@@ -177,6 +200,18 @@ class baseNetwork(object):
         min_valid_err = np.inf
         best_epoch = 0
 
+        if not self.regression:
+            self.log(LINE + "-" * 20)
+        else:
+            self.log(LINE)
+
+        self.log(self._prepare_train_header())
+
+        if not self.regression:
+            self.log(LINE + "-" * 20)
+        else:
+            self.log(LINE)
+
         for epoch in range(self.max_epochs):
 
             # Time the iteration 
@@ -185,7 +220,11 @@ class baseNetwork(object):
             train_err = 0
 
             # Implement training
-            for x_train, y_train in zip(self.x_train, self.y_train):
+            # Shuffle the data
+            x_train_shuff, y_train_shuff = shuffle(self.x_train,
+                                                   self.y_train,
+                                                   random_state=int(time.time()))
+            for x_train, y_train in zip(x_train_shuff, y_train_shuff):
 
                 x_train = x_train.reshape((1, -1))
                 y_train = y_train.reshape((1, -1))
@@ -204,11 +243,17 @@ class baseNetwork(object):
                 train_err += self.cost_function(output=train_pred,
                                                 target=y_train)
 
+            train_err /= np.cast['float32'](self.x_train.shape[0])
             valid_err = 0
             correct_class = 0
 
             # Check against validation set
-            for x_valid, y_valid in zip(self.x_valid, self.y_valid):
+            #Shuffle the data
+            x_valid_shuff, y_valid_shuff = shuffle(self.x_valid,
+                                                   self.y_valid,
+                                                   random_state=int(time.time()))
+
+            for x_valid, y_valid in zip(x_valid_shuff, y_valid_shuff):
 
                 x_valid = x_valid.reshape((1, -1))
                 y_valid = y_valid.reshape((1, -1))
@@ -222,6 +267,7 @@ class baseNetwork(object):
                 if not self.regression and self.output_layer.a.argmax() == y_train.argmax():
                     correct_class += 1
 
+            valid_err /= np.cast['float32'](self.x_valid.shape[0])
             # End of the iteration
             finish_time = time.time()
 
@@ -243,8 +289,8 @@ class baseNetwork(object):
                     "%0.6E" % eta)
 
             if not self.regression:
-                iteration_record += "{:^20}|".format(
-                        float(correct_class) / float(self.x_valid.shape[0]) * 100)
+                accuracy_percent = "%0.2f" % (float(correct_class) / float(self.x_valid.shape[0]) * 100)
+                iteration_record += "{:^20}|".format(accuracy_percent)
 
             self.log(iteration_record)
 

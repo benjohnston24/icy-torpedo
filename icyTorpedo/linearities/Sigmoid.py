@@ -39,7 +39,7 @@ class Sigmoid(baseLinearity):
     def prime(cls, z):
         """Compute the derivative of the sigmoid
 
-        g(z) = g(z)(1 - g(z))
+        g'(z) = g(z)(1 - g(z))
         """
 
         return cls.__call__(z) * (1 - cls.__call__(z))

@@ -19,7 +19,7 @@ setup(
     author='Ben Johnston',
     author_email='',
     version=__version__,
-    packages=find_packages(exclude=['tests', 'perceptron']),
+    packages=find_packages(exclude=['tests']),
     entry_points={
         'console_scripts': [
             'basicmnist=icyTorpedo.mnist:_main',

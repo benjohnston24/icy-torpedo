@@ -31,7 +31,7 @@ class DenseLayer(baseLayer):
 
     """
     def __init__(self, 
-            hidden_units, 
+            num_units=1,
             linearity=Sigmoid,
             name="Dense Layer",
             *args,
@@ -41,7 +41,7 @@ class DenseLayer(baseLayer):
                 *args, 
                 **kwargs)
 
-        self.num_units = hidden_units
+        self.num_units = num_units
         self.linearity = linearity() 
 
         self.initialise_weights()

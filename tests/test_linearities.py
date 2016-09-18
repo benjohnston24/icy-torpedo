@@ -4,7 +4,7 @@
 
 # Imports
 import unittest
-from icyTorpedo.linearities import Sigmoid
+from icyTorpedo.linearities import Sigmoid, Linear
 from icyTorpedo.linearities.baseLinearity import baseLinearity
 import numpy as np
 
@@ -59,3 +59,19 @@ class TestSigmoid(unittest.TestCase):
         g = Sigmoid()
 
         np.testing.assert_allclose(g.prime(-np.inf), 0)
+
+
+class TestLinear(unittest.TestCase):
+
+    def test_linear_name(self):
+        g = Linear(name='g')
+
+        self.assertEqual(g.name, 'g')
+
+    def test_sigmoid_basic_call(self):
+        g = Linear()
+        
+        np.testing.assert_allclose(g(5), 5)
+        np.testing.assert_allclose(g.prime(5), 1)
+
+

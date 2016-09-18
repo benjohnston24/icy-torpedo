@@ -47,25 +47,25 @@ class TestDenseLayer(unittest.TestCase):
 
     def test_incoming_layer(self):
 
-        l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=10)
+        l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
 
         self.assertEqual(l_hidden.input_layer, self.l_in)
 
-    def test_num_hidden_units(self):
+    def test_num_num_units(self):
 
-        l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=10)
+        l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
 
         self.assertEqual(l_hidden.num_units, 10)
 
     def test_weights_shape(self):
 
-        l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=10)
+        l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
 
         self.assertEqual(l_hidden.W.shape, (2,10))
 
     def test_bias_units_shape(self):
 
-        l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=10)
+        l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
 
         self.assertEqual(l_hidden.b.shape, (1, 10))
 
@@ -76,7 +76,7 @@ class TestDenseLayer(unittest.TestCase):
         l_in.set_inputs(np.array([[0,1]]))
         s = Sigmoid()
 
-        l_output = DenseLayer(input_layer=l_in, hidden_units=1)
+        l_output = DenseLayer(input_layer=l_in, num_units=1)
 
         l_output.W = np.array([[0.2],[0.1]])
         l_output.b = np.array([0.3])
@@ -87,7 +87,7 @@ class TestDenseLayer(unittest.TestCase):
     def test_cast_to_string(self):
 
         l_in = InputLayer(num_units=2)
-        l_output = DenseLayer(name="Hidden Layer", input_layer=l_in, hidden_units=1)
+        l_output = DenseLayer(name="Hidden Layer", input_layer=l_in, num_units=1)
 
         self.assertEqual(str(l_output),
             "Hidden Layer: 1 [linearity: Sigmoid]")
@@ -99,12 +99,12 @@ class TestNetworkLayerOrder(unittest.TestCase):
 
         self.l_in = InputLayer(num_units=2, name="l_in")
         self.l_hidden = DenseLayer(input_layer=self.l_in,
-                                   hidden_units=10,
+                                   num_units=10,
                                    linearity=Sigmoid,
                                    name="l_hidden",
                                    )
         self.l_output = DenseLayer(input_layer=self.l_hidden,
-                                   hidden_units=7,
+                                   num_units=7,
                                    linearity=Sigmoid,
                                    name="l_output",
                                    )

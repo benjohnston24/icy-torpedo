@@ -4,6 +4,7 @@
 
 # Imports
 import unittest
+from unittest.mock import patch
 import sys
 from icyTorpedo.mnist.runMnist import _options, _main
 
@@ -41,3 +42,15 @@ class TestRunMnist(unittest.TestCase):
         self.assertEqual(args.name, 'mnist_name')
         self.assertEqual(args.nodes, 10)
         self.assertEqual(args.epochs, 12)
+
+
+    @patch('icyTorpedo.network.baseNetwork.log')
+    @patch('sys.stdout')
+    def test_main_runs(self, _, __):
+        """Test the function successfully runs"""
+
+        sys.argv[1:] = ['-n', '1',
+                        '-m', '1',
+                        ]
+
+        _main()

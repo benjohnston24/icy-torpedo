@@ -4,6 +4,7 @@
 
 # Imports
 import unittest
+from unittest.mock import patch
 from icyTorpedo.resources import load_mnist_train_images, \
         load_mnist_train_labels, split_training_data
 from icyTorpedo.layers import InputLayer, DenseLayer
@@ -21,8 +22,8 @@ class TestMnistSingleSample(unittest.TestCase):
 
     def setUp(self):
         self.l_in = InputLayer(num_units=28 ** 2, name="Input")
-        self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
-        self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
+        self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
+        self.network = DenseLayer(input_layer=self.l_hidden, num_units=10, name="Output")
 
         # Load a single image
         self.image = load_mnist_train_images()[0]
@@ -66,8 +67,8 @@ class TestMnistDoubleSample(unittest.TestCase):
 
     def setUp(self):
         self.l_in = InputLayer(num_units=28 ** 2, name="Input")
-        self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
-        self.network = DenseLayer(input_layer=self.l_hidden, hidden_units=10, name="Output")
+        self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
+        self.network = DenseLayer(input_layer=self.l_hidden, num_units=10, name="Output")
 
         # Load a single image
         self.image = load_mnist_train_images()[:2]
@@ -88,6 +89,6 @@ class TestMnistDoubleSample(unittest.TestCase):
                 )
 
 
-    def test_memorise_two_samples(self):
+    def test_can_execute_two_samples(self):
 
         train_err, valid_err, correct_class = self.net.train()

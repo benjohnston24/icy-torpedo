@@ -34,8 +34,8 @@ class TestNetwork(unittest.TestCase):
     def reset(self):
         # Define the architecture of the network
         self.l_in = InputLayer(num_units=2, name="Input")
-        self.l_hidden = DenseLayer(input_layer=self.l_in, hidden_units=2, name="Hidden")
-        self.output_layer = DenseLayer(input_layer=self.l_hidden, hidden_units=1, name="Output")
+        self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
+        self.output_layer = DenseLayer(input_layer=self.l_hidden, num_units=1, name="Output")
 
         # Set the initial input values
         self.l_in.set_inputs(np.array([[1, 0]]))
@@ -219,10 +219,13 @@ class TestNetwork(unittest.TestCase):
 
         expected_output = "Neural Network: baseNetwork\n"\
                 "Architecture:\nInput\nHidden\nOutput\n"\
+                "Regression: False\n"\
                 "Cost Function: SquaredError\n"\
                 "Learning Rate: FixedRate: 1.000000E-03\n"\
                 "x_train shape: (128, 784)\ty_train shape: (128, 10)\n"\
                 "x_valid shape: (78, 784)\ty_valid shape: (78, 10)\n"\
+                "Max Epochs: 2000\n"\
+                "Patience: 100\n"
 
         self.assertEqual(str(self.net), expected_output)
 
@@ -236,4 +239,24 @@ class TestNetwork(unittest.TestCase):
         self.net.log("mock stdout")
 
         self.assertEqual("mock stdout\n", mock_stdout.getvalue())
+
+
+    def test_prepare_train_header(self):
+
+        header = self.net._prepare_train_header()
+
+        expected_result = \
+                "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+                 "Epoch",
+                 "Train Error",
+                 "Valid Error",
+                 "Valid / Train Error",
+                 "Time",
+                 "Best Error",
+                 "Learning Rate",
+                 "Accuracy (%)",
+                 )
+
+        self.assertEqual(header, expected_result)
+
 
