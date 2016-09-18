@@ -40,9 +40,9 @@ def _options(*args, **kwargs):
 def _main(*args, **kwargs):
     args = _options()
 
-    train_images = load_mnist_train_images()[::2]
+    train_images = load_mnist_train_images()
     train_images = train_images.reshape((-1, 28 ** 2))
-    train_labels = load_mnist_train_labels()[::2]
+    train_labels = load_mnist_train_labels()
 
     x_train, y_train, x_valid, y_valid = split_training_data(train_images, train_labels)
 

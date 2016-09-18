@@ -264,8 +264,8 @@ class baseNetwork(object):
                                                 target=y_valid)
                  
                 # If this is a categorisation problem determine if correctly labeled
-                if not self.regression and self.output_layer.a.argmax() == y_train.argmax():
-                    correct_class += 1
+                if not self.regression:
+                    correct_class += (valid_pred.argmax() == y_valid.argmax())
 
             valid_err /= np.cast['float32'](self.x_valid.shape[0])
             # End of the iteration
