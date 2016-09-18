@@ -145,7 +145,6 @@ def load_mnist_train_labels():
     return load_mnist_labels(MNIST_TRAIN_LABELS)
 
 
-
 def load_mnist_test_images():
     """Load the MNIST test set images
 

@@ -30,8 +30,13 @@ tests_unit:
 	nosetests $@ $(COVERAGE)
 
 build:
-	cd ../; python setup.py bdist_wheel; cd -
+	python setup.py bdist_wheel
+
+clean-build:
+	rm -rf dist
+	rm -rf build
+	rm -rf icyTorpedo.egg-info
 
 all: test 
 
-.PHONY: all tests_functional tests_unit clean
+.PHONY: all tests_functional tests_unit build clean

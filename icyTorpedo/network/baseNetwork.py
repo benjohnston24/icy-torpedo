@@ -26,7 +26,6 @@ class baseNetwork(object):
 
     def __init__(self,
                  network_layers=None,
-                 targets=None, 
                  train_data=(None, None),
                  valid_data=(None, None),
                  test_data=(None, None),
@@ -57,7 +56,6 @@ class baseNetwork(object):
 
         # Define characteristics of the network
         self.cost_function = costfunction() 
-        self.targets=targets
         self.eta = eta
         self.max_epochs = max_epochs
         self.patience = patience
