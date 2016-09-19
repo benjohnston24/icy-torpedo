@@ -121,11 +121,12 @@ class baseNetwork(object):
         delta = self.cost_function.prime(output=layer.a, target=targets) * \
                 self.output_layer.linearity.prime(layer.h)
         layer.delta = delta
-        layer.dc_db = delta
+        layer.dc_db = delta 
         layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
         w_1 = layer.W
         layer = layer.input_layer
 
+#        import pdb;pdb.set_trace()
         # Backprop over remaining layers
         while layer.input_layer is not None:
             # delta = (w^l+1 * delta^(l+1)) * sigma'(z^l)
@@ -224,8 +225,19 @@ class baseNetwork(object):
             x_train_shuff, y_train_shuff = shuffle(self.x_train,
                                                    self.y_train,
                                                    random_state=int(time.time()))
-            for x_train, y_train in zip(x_train_shuff, y_train_shuff):
 
+            # Predict based on current weights
+            ### TODO FINISH THIS
+            train_pred = self.predict(x_train_shuff)
+
+            train_err = self.cost_function(output=train_pred,
+                                           target=y_train_shuff)
+            train_err /= np.cast['float32'](self.x_train.shape[0])
+
+            self.backprop(y_train_shuff)
+            eta = self.updateweights()
+
+            if False:
                 x_train = x_train.reshape((1, -1))
                 y_train = y_train.reshape((1, -1))
 
@@ -243,17 +255,22 @@ class baseNetwork(object):
                 train_err += self.cost_function(output=train_pred,
                                                 target=y_train)
 
-            train_err /= np.cast['float32'](self.x_train.shape[0])
-            valid_err = 0
             correct_class = 0
 
             # Check against validation set
             #Shuffle the data
-            x_valid_shuff, y_valid_shuff = shuffle(self.x_valid,
-                                                   self.y_valid,
-                                                   random_state=int(time.time()))
+            #x_valid_shuff, y_valid_shuff = shuffle(self.x_valid,
+            #                                       self.y_valid,
+            #                                       random_state=int(time.time()))
+            valid_pred = self.predict(self.x_valid)
 
-            for x_valid, y_valid in zip(x_valid_shuff, y_valid_shuff):
+            valid_err = self.cost_function(output=valid_pred,
+                                            target=self.y_valid)
+
+            valid_err /= np.cast['float32'](self.x_valid.shape[0])
+
+            if False:
+            # for x_valid, y_valid in zip(x_valid_shuff, y_valid_shuff):
 
                 x_valid = x_valid.reshape((1, -1))
                 y_valid = y_valid.reshape((1, -1))
@@ -263,11 +280,10 @@ class baseNetwork(object):
                 valid_err += self.cost_function(output=valid_pred,
                                                 target=y_valid)
                  
-                # If this is a categorisation problem determine if correctly labeled
-                if not self.regression:
-                    correct_class += (valid_pred.argmax() == y_valid.argmax())
+            # If this is a categorisation problem determine if correctly labeled
+            if not self.regression:
+                correct_class += (valid_pred.argmax() == self.y_valid.argmax())
 
-            valid_err /= np.cast['float32'](self.x_valid.shape[0])
             # End of the iteration
             finish_time = time.time()
 
