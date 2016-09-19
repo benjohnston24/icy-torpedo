@@ -33,8 +33,9 @@ class InputLayer(baseLayer):
 
     def set_inputs(self, input_values):
 
+        num_samples, self.num_units = input_values.shape
         # Activations g(h)
-        self.a = input_values
+        self.a = np.hstack((np.ones((num_samples, 1), input_values)))
 
     def __str__(self):
 

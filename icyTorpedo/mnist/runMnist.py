@@ -44,7 +44,9 @@ def _main(*args, **kwargs):
     train_images = train_images.reshape((-1, 28 ** 2))
     train_labels = load_mnist_train_labels()
 
-    x_train, y_train, x_valid, y_valid = split_training_data(train_images, train_labels)
+    x_train, y_train, x_valid, y_valid = split_training_data(train_images,
+                                                             train_labels,
+                                                             )
 
     l_input = InputLayer(num_units=28 ** 2, name="Input")
     l_hidden = DenseLayer(input_layer=l_input, num_units=args.nodes, name="Hidden")
@@ -60,7 +62,7 @@ def _main(*args, **kwargs):
             max_epochs=args.epochs,
             name=args.name,
             verbose=True,
-            log_data=True,
+            log_data=False,
             )
 
     # Log the descriptor

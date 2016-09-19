@@ -27,7 +27,10 @@ class TestInputLayer(unittest.TestCase):
     def test_input_shape(self):
 
         l_in = InputLayer(num_units=2)
+        test_data = np.zeros((10,3))
+        l_in.set_inputs(test_data)
 
+        self.assertEqual(l_in.a.shape, (10, 4))
         self.assertEqual(l_in.num_units, 2)
 
     def test_cast_to_string(self):
