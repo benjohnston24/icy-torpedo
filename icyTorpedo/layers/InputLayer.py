@@ -34,8 +34,10 @@ class InputLayer(baseLayer):
     def set_inputs(self, input_values):
 
         num_samples, self.num_units = input_values.shape
-        # Activations g(h)
-        self.a = np.hstack((np.ones((num_samples, 1), input_values)))
+        # Activations for input layer are just the inputs to the network
+        # Add bias units
+        self.a = np.hstack((np.ones((num_samples, 1)), input_values))
+        self.input_shape = self.num_units + 1  # Add the bias units
 
     def __str__(self):
 

@@ -41,7 +41,7 @@ class DenseLayer(baseLayer):
                 *args, 
                 **kwargs)
 
-        self.num_units = num_units
+        self.num_units = num_units + 1
         self.linearity = linearity() 
 
         self.initialise_weights()
@@ -50,11 +50,11 @@ class DenseLayer(baseLayer):
 
         # Weights
         # Produce a normal distribution of mean 0 and standard deviation 0.4
+        # Include biases within the weights.  Biases are the first column of the 
+        # inputs
+        # Add 1 for the biases
         self.W = np.random.randn(self.input_shape, self.num_units) * 0.4 
 
-        # Biases
-        # Produce a normal distribution of mean 0 and standard deviation 0.4
-        self.b = np.random.randn(1, self.num_units) * 0.4
 
     def h_x(self):
         """Compute the non linearised activations
@@ -67,10 +67,13 @@ class DenseLayer(baseLayer):
         Returns
         -----------
 
-        h(x) = sum(wx) + b
+        h(x) = sum(wx)
+
+        Note: bias units units are included as the first column of non 
+        linearised activations
 
         """
-        self.h = np.dot(self.input_layer.a, self.W) + self.b
+        self.h = np.dot(self.input_layer.a, self.W)
         return self.h
 
 
