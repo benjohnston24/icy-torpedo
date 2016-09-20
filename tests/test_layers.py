@@ -30,7 +30,7 @@ class TestInputLayer(unittest.TestCase):
         test_data = np.zeros((10,3))
         l_in.set_inputs(test_data)
 
-        self.assertEqual(l_in.a.shape, (10, 4))
+        self.assertEqual(l_in.a.shape, (10, 3))
         self.assertEqual(l_in.num_units, 3)
 
     def test_cast_to_string(self):
@@ -58,15 +58,14 @@ class TestDenseLayer(unittest.TestCase):
 
         l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
 
-        # Add one to include biases
-        self.assertEqual(l_hidden.num_units, 11)
+        self.assertEqual(l_hidden.num_units, 10)
 
     def test_weights_shape(self):
 
         l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
 
         # Add 1 for baises
-        self.assertEqual(l_hidden.W.shape, (2,11))
+        self.assertEqual(l_hidden.W.shape, (3,10))
 
     @unittest.skip("Biases now included in weights matrix")
     def test_bias_units_shape(self):
@@ -95,13 +94,12 @@ class TestDenseLayer(unittest.TestCase):
         l_output = DenseLayer(name="Hidden Layer", input_layer=l_in, num_units=1)
 
         self.assertEqual(str(l_output),
-            "Hidden Layer: 2 [linearity: Sigmoid]")
+            "Hidden Layer: 1 [linearity: Sigmoid]")
 
 
 class TestNetworkLayerOrder(unittest.TestCase):
 
     def setUp(self):
-
         self.l_in = InputLayer(num_units=2, name="l_in")
         self.l_hidden = DenseLayer(input_layer=self.l_in,
                                    num_units=10,

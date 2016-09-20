@@ -38,10 +38,10 @@ class DenseLayer(baseLayer):
             **kwargs):
         super(DenseLayer, self).__init__(
                 name=name,
+                num_units=num_units,
                 *args, 
                 **kwargs)
 
-        self.num_units = num_units + 1
         self.linearity = linearity() 
 
         self.initialise_weights()
@@ -53,7 +53,7 @@ class DenseLayer(baseLayer):
         # Include biases within the weights.  Biases are the first column of the 
         # inputs
         # Add 1 for the biases
-        self.W = np.random.randn(self.input_shape, self.num_units) * 0.4 
+        self.W = np.random.randn(self.input_layer.num_units + 1, self.num_units) * 0.4 
 
 
     def h_x(self):
@@ -73,6 +73,7 @@ class DenseLayer(baseLayer):
         linearised activations
 
         """
+        ## Add the biases
         self.h = np.dot(self.input_layer.a, self.W)
         return self.h
 
@@ -83,6 +84,7 @@ class DenseLayer(baseLayer):
         a = linearity(h_x)
         """
         self.a = self.linearity(self.h_x())
+        self.a = np.hstack((np.ones((self.a.shape[0], 1)), self.a))
         return self.a
 
     def __str__(self):

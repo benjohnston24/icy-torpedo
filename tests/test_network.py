@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import MagicMock, patch, mock_open
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.layers import InputLayer, DenseLayer
-from icyTorpedo.linearities import Sigmoid
+from icyTorpedo.linearities import Sigmoid, Linear
 import numpy as np
 from io import StringIO
 
@@ -35,23 +35,24 @@ class TestNetwork(unittest.TestCase):
         # Define the architecture of the network
         self.l_in = InputLayer(num_units=2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
-        self.output_layer = DenseLayer(input_layer=self.l_hidden, num_units=1, name="Output")
+        self.output_layer = DenseLayer(input_layer=self.l_hidden, 
+                                       num_units=1, 
+                                       linearity=Linear,
+                                       name="Output")
 
         # Set the initial input values
         self.l_in.set_inputs(np.array([[1, 0]]))
 
         # Construct known weights
         self.l_hidden.W = np.array([
+            [0.3, 0.6],
             [0.1, 0.4],
             [0.2, 0.5],])
 
-        self.l_hidden.b = np.array([[0.3, 0.6]])
-
         self.output_layer.W = np.array([
+            [0.9],
             [0.7],
             [0.8]])
-
-        self.output_layer.b = np.array([[0.9]])
 
         # Target output of network 
         self.target_output = 2.0944 

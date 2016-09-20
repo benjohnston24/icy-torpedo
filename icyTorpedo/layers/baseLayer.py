@@ -22,13 +22,14 @@ class baseLayer(object):
     name   :  A string of the name for the layer
     """
 
-    def __init__(self, input_layer, name=None):
+    def __init__(self, input_layer=None, num_units=None, name=None):
 
-        self.input_shape = input_layer.num_units
+        #self.input_shape = input_layer.num_units
         self.input_layer = input_layer
 
         self.name = name
-        self.activations = np.zeros(self.input_shape)
+
+        self.num_units = num_units  # Add bias units
 
 
 def iterlayers(output_layer):

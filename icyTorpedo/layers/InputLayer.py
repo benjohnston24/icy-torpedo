@@ -5,6 +5,7 @@
 # Imports
 import numpy as np
 from .baseLayer import baseLayer
+from icyTorpedo.linearities import Linear 
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -23,21 +24,33 @@ class InputLayer(baseLayer):
     """
 
     #def __init__(self, inputs=None, name=None, **kwargs):
-    def __init__(self, num_units=None, name="Input Layer", **kwargs):
+    def __init__(self, num_units=1, name="Input Layer", **kwargs):
 
-        self.input_layer = None
+        self.name=name
 
         self.num_units = num_units
 
-        self.name = name
+        self.input_layer = None  # No other layers before this one
+
+        self.linearity = Linear()
 
     def set_inputs(self, input_values):
 
         num_samples, self.num_units = input_values.shape
         # Activations for input layer are just the inputs to the network
-        # Add bias units
+        # Add bias layer
+        self.h = input_values
         self.a = np.hstack((np.ones((num_samples, 1)), input_values))
-        self.input_shape = self.num_units + 1  # Add the bias units
+
+    def a_h(self, value=None):
+
+        if value is None:
+            return self.a
+        else:
+            return value
+
+
+
 
     def __str__(self):
 

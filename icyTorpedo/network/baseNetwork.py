@@ -121,20 +121,29 @@ class baseNetwork(object):
         delta = self.cost_function.prime(output=layer.a, target=targets) * \
                 self.output_layer.linearity.prime(layer.h)
         layer.delta = delta
-        layer.dc_db = delta 
-        layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
-        w_1 = layer.W
-        layer = layer.input_layer
 
-#        import pdb;pdb.set_trace()
+        # Add the bias units of the previous layer
+        layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
+
         # Backprop over remaining layers
-        while layer.input_layer is not None:
-            # delta = (w^l+1 * delta^(l+1)) * sigma'(z^l)
-            delta = np.dot(delta, w_1.T) * layer.linearity.prime(layer.h)
+        for layer_idx in range(2, len(self.network_layers)):
+
+            layer = self.network_layers[-layer_idx]
+            layer_after = self.network_layers[-layer_idx + 1]
+            layer_before = self.network_layers[-layer_idx -1]
+#            input_layer_activations = np.hstack((
+#                np.ones((layer.input_layer.h.shape[0],1)),
+#                layer.input_layer.h))
+
+            # delta = (w^l+1 * delta^(l+1)) * sigma'(h^l)
+            delta = np.dot(layer_after.W, delta) * \
+                    layer.linearity.prime(layer.h)
 
             layer.delta = delta
-            layer.dc_db = delta
-            layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
+            # dc_dw = alpha^(l-1) * delta^ll
+            # Add the bias units to the input
+
+            layer.dc_dw = np.dot(layer.input_layer.a, delta.T) 
 
             w_1 = layer.W
             layer = layer.input_layer
@@ -165,7 +174,7 @@ class baseNetwork(object):
 
         while layer.input_layer is not None:
             layer.W -= learning_rate * layer.dc_dw
-            layer.b -= learning_rate * layer.dc_db
+            #layer.b -= learning_rate * layer.dc_db
 
             layer = layer.input_layer
 
