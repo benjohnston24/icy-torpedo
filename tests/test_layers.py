@@ -85,8 +85,8 @@ class TestDenseLayer(unittest.TestCase):
 
         l_output.W = np.array([[0.3], [0.2],[0.1]])
 
-        self.assertEqual(l_output.h_x(), 0.4)
-        self.assertEqual(l_output.a_h(), s(0.4))
+        self.assertEqual(l_output.h_x(), np.array([[0.4]]))
+        self.assertEqual(l_output.a_h(), np.array([[s(0.4)]]))
 
     def test_cast_to_string(self):
 

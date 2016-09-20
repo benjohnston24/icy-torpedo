@@ -74,7 +74,11 @@ class DenseLayer(baseLayer):
 
         """
         ## Add the biases
-        self.h = np.dot(self.input_layer.a, self.W)
+        inputs = np.hstack((
+            np.ones((self.input_layer.a.shape[0],1)),
+            self.input_layer.a))
+        self.h = np.dot(inputs, self.W)
+        #self.h = np.dot(self.input_layer.a, self.W)
         return self.h
 
 
@@ -84,7 +88,6 @@ class DenseLayer(baseLayer):
         a = linearity(h_x)
         """
         self.a = self.linearity(self.h_x())
-        self.a = np.hstack((np.ones((self.a.shape[0], 1)), self.a))
         return self.a
 
     def __str__(self):
