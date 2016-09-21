@@ -27,11 +27,11 @@ class TestInputLayer(unittest.TestCase):
     def test_input_shape(self):
 
         l_in = InputLayer(num_units=2)
-        test_data = np.zeros((10,3))
+        test_data = np.zeros((3,2))
         l_in.set_inputs(test_data)
 
-        self.assertEqual(l_in.a.shape, (10, 3))
-        self.assertEqual(l_in.num_units, 3)
+        self.assertEqual(l_in.a.shape, (3, 2))
+        self.assertEqual(l_in.num_units, 2)
 
     def test_cast_to_string(self):
 
@@ -62,10 +62,12 @@ class TestDenseLayer(unittest.TestCase):
 
     def test_weights_shape(self):
 
-        l_hidden = DenseLayer(input_layer=self.l_in, num_units=10)
+        test_data = np.ones((2, 1))
+        l_in = InputLayer(num_units=2)
+        l_hidden = DenseLayer(input_layer=self.l_in, num_units=2)
 
         # Add 1 for baises
-        self.assertEqual(l_hidden.W.shape, (3,10))
+        self.assertEqual(l_hidden.W.shape, (3,2))
 
     @unittest.skip("Biases now included in weights matrix")
     def test_bias_units_shape(self):
@@ -81,12 +83,24 @@ class TestDenseLayer(unittest.TestCase):
         l_in.set_inputs(np.array([[0,1]]))
         s = Sigmoid()
 
-        l_output = DenseLayer(input_layer=l_in, num_units=1)
+        l_output = DenseLayer(input_layer=l_in, num_units=2)
 
-        l_output.W = np.array([[0.3], [0.2],[0.1]])
+        l_output.W = np.array([
+            [0.5, 0.5],
+            [0.1, 0.2],
+            [0.3, 0.4],
+            ])
 
-        self.assertEqual(l_output.h_x(), 0.4)
-        self.assertEqual(l_output.a_h(), s(0.4))
+        # h = [[0.5 * 1 + 0.1 * 0 + 0.3 * 1, 0.5 * 1 + 0.2 * 0 + 0.4 * 1]] 
+        np.testing.assert_almost_equal(l_output.h_x(), 
+                np.array([[0.8, 0.9]]),
+                decimal=1,
+                )
+        # a = s(h)
+        np.testing.assert_almost_equal(l_output.a_h(), 
+                np.array([[0.69, 0.71]]),
+                decimal=1,
+                )
 
     def test_cast_to_string(self):
 

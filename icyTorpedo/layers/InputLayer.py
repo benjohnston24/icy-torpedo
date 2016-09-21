@@ -40,7 +40,8 @@ class InputLayer(baseLayer):
         # Activations for input layer are just the inputs to the network
         # Add bias layer
         self.h = input_values
-        self.a = np.hstack((np.ones((num_samples, 1)), input_values))
+        self.a = self.h
+        # self.a = np.hstack((np.ones((num_samples, 1)), input_values))
 
     def a_h(self, value=None):
 

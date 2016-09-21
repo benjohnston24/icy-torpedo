@@ -37,25 +37,25 @@ class TestNetwork(unittest.TestCase):
         self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
         self.output_layer = DenseLayer(input_layer=self.l_hidden, 
                                        num_units=1, 
-                                       linearity=Linear,
                                        name="Output")
 
         # Set the initial input values
-        self.l_in.set_inputs(np.array([[1, 0]]))
+        self.l_in.set_inputs(np.array([[0, 1]]))
 
         # Construct known weights
         self.l_hidden.W = np.array([
-            [0.3, 0.6],
-            [0.1, 0.4],
-            [0.2, 0.5],])
+            [0.5, 0.5],
+            [0.1, 0.2],
+            [0.3, 0.4],
+            ])
 
         self.output_layer.W = np.array([
-            [0.9],
-            [0.7],
-            [0.8]])
+            [0.03],
+            [0.01],
+            [0.02]])
 
         # Target output of network 
-        self.target_output = 2.0944 
+        self.target_output = np.array([[1]]) 
 
         self.net = baseNetwork(
                 network_layers = [self.l_in, self.l_hidden, self.output_layer],
@@ -65,9 +65,9 @@ class TestNetwork(unittest.TestCase):
                 verbose=False,
                 )
 
-        # Expected output after forward propr 1.904
-        self.expected_output = np.array([[
-            (s(0.4) * 0.7) + (s(1) * 0.8) + 0.9]])
+        # Expected output after forward propr 1.026 
+        self.expected_output_h = np.array([[0.051118]])
+        self.expected_output_a = np.array([[0.51278]])
 
  
     def test_correct_input_output_layers(self):
@@ -75,7 +75,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(self.net.output_layer, self.output_layer)
         self.assertEqual(self.net.input_layer, self.l_in)
 
-    def test_forward_and_back_prop(self):
+    def test_forwardprop(self):
 
         self.reset()
 
@@ -84,13 +84,20 @@ class TestNetwork(unittest.TestCase):
 
         # Check the outputs are correct
         # Check hidden layer
-        np.testing.assert_equal(self.l_hidden.h, np.array([[0.4, 1]]))
-        np.testing.assert_allclose(self.l_hidden.a, np.array([[s(0.4), s(1)]]))
+        np.testing.assert_equal(self.l_hidden.h, np.array([[0.8, 0.9]]))
+        np.testing.assert_allclose(self.l_hidden.a, np.array([[s(0.8), s(0.9)]]))
 
         # Check output layer
-        np.testing.assert_equal(self.net.output_layer.h, self.expected_output)
-        np.testing.assert_equal(self.net.output_layer.a, np.array(s(self.expected_output)))
-
+        np.testing.assert_almost_equal(
+                self.net.output_layer.h, 
+                self.expected_output_h,
+                decimal=3,
+                )
+        np.testing.assert_almost_equal(
+                self.net.output_layer.a, 
+                self.expected_output_a,
+                decimal=3,
+                )
 
     def test_backprop(self):
 
@@ -102,6 +109,10 @@ class TestNetwork(unittest.TestCase):
         self.net.backprop(self.target_output)
 
         # Check output layer
+        # delta_o = (a_o - t) * a_o * (1 - a_o)
+        np.testing.assert_approx_equal(self.net.output_layer.delta, np.array([-0.24]),
+                                       significant=2)
+ 
         # delta = (s(1.904) - 2.0944) * s(1.904) * (1 - s(1.904)) 
         # dc_db = delta
         np.testing.assert_approx_equal(self.net.output_layer.delta, np.array([-0.138133]),

@@ -117,13 +117,20 @@ class baseNetwork(object):
         """
 
         # Start at the output layer
-        layer = self.output_layer
-        delta = self.cost_function.prime(output=layer.a, target=targets) * \
-                self.output_layer.linearity.prime(layer.h)
-        layer.delta = delta
+        delta_o = self.cost_function.prime(output=self.output_layer.a,
+                                           target=targets) * \
+                self.output_layer.linearity.prime(self.output_layer.h)
+        self.output_layer.delta = delta_o
+
+        # Store for later use
+        delta = delta_o
 
         # Add the bias units of the previous layer
-        layer.dc_dw = np.dot(layer.input_layer.a.T, delta) 
+        input_layer = self.output_layer.input_layer
+        inputs = np.hstack((
+            np.ones((input_layer.a.shape[0], 1)),
+            input_layer.a))
+        self.output_layer.dc_dw = np.dot(inputs.T, delta_o) 
 
         # Backprop over remaining layers
         for layer_idx in range(2, len(self.network_layers)):
@@ -131,22 +138,24 @@ class baseNetwork(object):
             layer = self.network_layers[-layer_idx]
             layer_after = self.network_layers[-layer_idx + 1]
             layer_before = self.network_layers[-layer_idx -1]
+
 #            input_layer_activations = np.hstack((
 #                np.ones((layer.input_layer.h.shape[0],1)),
 #                layer.input_layer.h))
 
             # delta = (w^l+1 * delta^(l+1)) * sigma'(h^l)
-            delta = np.dot(layer_after.W, delta) * \
-                    layer.linearity.prime(layer.h)
+            # Strip out the biases
+            delta = np.dot(layer_after.W[1:,:], delta) * \
+                    layer.linearity.prime(layer.h).T
 
             layer.delta = delta
-            # dc_dw = alpha^(l-1) * delta^ll
             # Add the bias units to the input
+            inputs = np.hstack((
+                np.ones((layer_before.a.shape[0], 1)),
+                layer_before.a))
 
-            layer.dc_dw = np.dot(layer.input_layer.a, delta.T) 
+            layer.dc_dw = np.dot(delta, inputs).T 
 
-            w_1 = layer.W
-            layer = layer.input_layer
 
     def updateweights(self):
         """Update the weights of the network in each layer:
