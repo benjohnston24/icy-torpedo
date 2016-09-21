@@ -53,7 +53,7 @@ class DenseLayer(baseLayer):
         # Include biases within the weights.  Biases are the first column of the 
         # inputs
         # Add 1 for the biases
-        self.W = np.random.randn(self.input_layer.num_units + 1, self.num_units) * 0.4 
+        self.W = np.random.randn(self.input_layer.num_units + 1, self.num_units) * 0.4
 
 
     def h_x(self):
@@ -78,7 +78,6 @@ class DenseLayer(baseLayer):
             np.ones((self.input_layer.a.shape[0],1)),
             self.input_layer.a))
         self.h = np.dot(inputs, self.W)
-        #self.h = np.dot(self.input_layer.a, self.W)
         return self.h
 
 

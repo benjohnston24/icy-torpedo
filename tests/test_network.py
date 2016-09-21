@@ -37,25 +37,25 @@ class TestNetwork(unittest.TestCase):
         self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
         self.output_layer = DenseLayer(input_layer=self.l_hidden, 
                                        num_units=1, 
-                                       linearity=Linear,
                                        name="Output")
 
         # Set the initial input values
-        self.l_in.set_inputs(np.array([[1, 0]]))
+        self.l_in.set_inputs(np.array([[0, 1]]))
 
         # Construct known weights
         self.l_hidden.W = np.array([
+            [0.5, 0.5],
             [0.1, 0.2],
             [0.3, 0.4],
-            [0.5, 0.6],])
+            ])
 
         self.output_layer.W = np.array([
-            [0.7],
-            [0.7],
-            [0.9]])
+            [0.03],
+            [0.01],
+            [0.02]])
 
         # Target output of network 
-        self.target_output = 2.0944 
+        self.target_output = np.array([[1]]) 
 
         self.net = baseNetwork(
                 network_layers = [self.l_in, self.l_hidden, self.output_layer],
@@ -65,9 +65,9 @@ class TestNetwork(unittest.TestCase):
                 verbose=False,
                 )
 
-        # Expected output after forward propr 1.904
-        self.expected_output = np.array([[
-            (s(0.4) * 0.8) + (s(0.6) * 0.8) + 0.7]])
+        # Expected output after forward propr 1.026 
+        self.expected_output_h = np.array([[0.051118]])
+        self.expected_output_a = np.array([[0.51278]])
 
  
     def test_correct_input_output_layers(self):
@@ -75,7 +75,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(self.net.output_layer, self.output_layer)
         self.assertEqual(self.net.input_layer, self.l_in)
 
-    def test_forward_and_back_prop(self):
+    def test_forwardprop(self):
 
         self.reset()
 
@@ -84,17 +84,20 @@ class TestNetwork(unittest.TestCase):
 
         # Check the outputs are correct
         # Check hidden layer
-        np.testing.assert_almost_equal(self.l_hidden.h, np.array([[0.4, 0.6]], 
-                                       decimal=1))
-        np.testing.assert_allclose(self.l_hidden.a, np.array([[s(0.4), s(0.6)]]))
+        np.testing.assert_equal(self.l_hidden.h, np.array([[0.8, 0.9]]))
+        np.testing.assert_allclose(self.l_hidden.a, np.array([[s(0.8), s(0.9)]]))
 
         # Check output layer
-#        np.testing.assert_almost_equal(self.net.output_layer.h, 
-#                                       self.expected_output,
-#                                       decimal=4,
-#                                       )
-        np.testing.assert_equal(self.net.output_layer.a, np.array(s(self.expected_output)))
-
+        np.testing.assert_almost_equal(
+                self.net.output_layer.h, 
+                self.expected_output_h,
+                decimal=3,
+                )
+        np.testing.assert_almost_equal(
+                self.net.output_layer.a, 
+                self.expected_output_a,
+                decimal=3,
+                )
 
     def test_backprop(self):
 
@@ -106,29 +109,31 @@ class TestNetwork(unittest.TestCase):
         self.net.backprop(self.target_output)
 
         # Check output layer
-        # delta = (s(1.904) - 2.0944) * s(1.904) * (1 - s(1.904)) 
-        # dc_db = delta
-        np.testing.assert_approx_equal(self.net.output_layer.delta, np.array([-0.39434]),
-                                       significant=3)
+        # delta_o = (a_o - t) * a_o * (1 - a_o)
+        np.testing.assert_approx_equal(self.net.output_layer.delta, np.array([-0.1217]),
+                                       significant=2)
  
-        a_1 = np.array([[s(0.4), s(0.6)]])
-        expected_result = np.dot(a_1.T, -0.39434)
         np.testing.assert_almost_equal(self.net.output_layer.dc_dw, 
-                                       expected_result,
+                                       np.array([
+                                           [-0.1217],
+                                           [-0.08397],
+                                           [-0.08652]
+                                       ]),
                                        decimal=4,
                                        )
 
         # Check hidden layer
         np.testing.assert_almost_equal(self.l_hidden.delta,
-                                       np.array([[-0.02323156, -0.02172688]]),
-                                       decimal=4,
-                                       )
-        np.testing.assert_almost_equal(self.l_hidden.dc_db,
-                                       np.array([[-0.02323156, -0.02172688]]),
+                                       np.array([[-0.00026038], 
+                                                 [-0.0005003]]),
                                        decimal=4,
                                        )
         np.testing.assert_almost_equal(self.l_hidden.dc_dw,
-                                       np.array([[-0.02323156, -0.02172688], [0,0]]),
+                                       np.array([
+                                           [-0.00026038, -0.0005003], 
+                                           [0,0],
+                                           [-0.00026038, -0.0005003], 
+                                           ]),
                                        decimal=4,
                                        )
 
@@ -145,25 +150,19 @@ class TestNetwork(unittest.TestCase):
 
         np.testing.assert_almost_equal(self.net.output_layer.W,
                                        np.array([
-                                           [0.7000827],
-                                           [0.8010098]]),
-                                       decimal=3,
-                                       )
-        np.testing.assert_almost_equal(self.net.output_layer.b,
-                                       np.array([
-                                           [0.90138133]]),
+                                           [0.031217],
+                                           [0.0108397],
+                                           [0.0208652],
+                                           ]),
                                        decimal=3,
                                        )
 
         np.testing.assert_almost_equal(self.l_hidden.W,
                                        np.array([
-                                           [0.100232316, 0.4],
-                                           [0.200217269, 0.5]]),
-                                       decimal=3,
-                                       )
-        np.testing.assert_almost_equal(self.l_hidden.b,
-                                       np.array([
-                                           [0.300232316, 0.600217269]]),
+                                           [0.5, 0.5], 
+                                           [0.1, 0.2], 
+                                           [0.3, 0.4], 
+                                           ]),
                                        decimal=3,
                                        )
 
