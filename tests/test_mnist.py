@@ -76,11 +76,15 @@ class TestMnistDoubleSample(unittest.TestCase):
         self.label = load_mnist_train_labels()[:2]
 
         # Split into training and validation tests
-        x_train, y_train, x_valid, y_valid = split_training_data(self.image, self.label)
+        # x_train, y_train, x_valid, y_valid = split_training_data(self.image, self.label)
+        self.x_train = self.image
+        y_train = self.label
+        x_valid = self.x_train
+        y_valid = y_train
 
         self.net = baseNetwork(
                 network_layers =[self.l_in, self.l_hidden, self.network],
-                train_data=(x_train, y_train),
+                train_data=(self.x_train, y_train),
                 valid_data=(x_valid, y_valid),
                 eta=FixedRate(0.1),
                 max_epochs=1000,
@@ -92,3 +96,14 @@ class TestMnistDoubleSample(unittest.TestCase):
     def test_can_execute_two_samples(self):
 
         train_err, valid_err, correct_class = self.net.train()
+
+        predictions = self.net.predict(self.x_train)
+
+        # Just check the shape, not the output as we are not trying hard to train the network 
+        self.assertEqual(predictions.shape, (2, 10))
+
+        np.testing.assert_almost_equal(train_err, 0,
+                decimal=0)
+
+        np.testing.assert_almost_equal(valid_err, 0,
+                decimal=0)
