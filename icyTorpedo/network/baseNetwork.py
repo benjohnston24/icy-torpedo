@@ -130,6 +130,7 @@ class baseNetwork(object):
         inputs = np.hstack((
             np.ones((input_layer.a.shape[0], 1)),
             input_layer.a))
+
         self.output_layer.dc_dw = np.dot(inputs.T, delta_o) 
 
         # Backprop over remaining layers
@@ -141,7 +142,7 @@ class baseNetwork(object):
 
             # delta = (w^l+1 * delta^(l+1)) * sigma'(h^l)
             # Strip out the biases
-            delta = np.dot(layer_after.W[1:,:], delta) * \
+            delta = np.dot(layer_after.W[1:,:], delta.T) * \
                     layer.linearity.prime(layer.h).T
 
             layer.delta = delta

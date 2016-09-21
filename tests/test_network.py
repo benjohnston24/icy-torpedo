@@ -262,3 +262,152 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(header, expected_result)
 
 
+class TestMultipleSamples(unittest.TestCase):
+
+    def setUp(self):
+
+        self.reset()
+
+    def reset(self):
+        # Define the architecture of the network
+        self.l_in = InputLayer(num_units=2, name="Input")
+        self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
+        self.output_layer = DenseLayer(input_layer=self.l_hidden, 
+                                       num_units=1, 
+                                       name="Output")
+
+        # Set the initial input values
+        x_test = np.array([
+            [1, 0],
+            [0, 1],
+            ])
+
+        y_test = np.array([
+            [1],
+            [1],
+            ])
+
+        self.l_in.set_inputs(np.array(x_test))
+
+        # Construct known weights
+        self.l_hidden.W = np.array([
+            [0.5, 0.5],
+            [0.1, 0.2],
+            [0.3, 0.4],
+            ])
+
+        self.output_layer.W = np.array([
+            [0.03],
+            [0.01],
+            [0.02]])
+
+        # Target output of network 
+        self.target_output = np.array([ 
+            [1],
+            [1],
+            ])
+
+        self.net = baseNetwork(
+                network_layers = [self.l_in, self.l_hidden, self.output_layer],
+                targets=self.target_output,
+                name='baseNetwork',
+                log_data=False,
+                verbose=False,
+                )
+
+    def test_forwardprop(self):
+
+        self.reset()
+
+        self.net.forwardprop()
+
+        np.testing.assert_almost_equal(
+                self.l_hidden.h,
+                np.array([
+                    [0.6, 0.7],
+                    [0.8, 0.9],
+                    ]),
+                decimal=2)
+
+        np.testing.assert_almost_equal(
+                self.net.output_layer.h,
+                np.array([
+                    [0.0498],
+                    [0.05432],
+                    ]),
+                decimal=2)
+
+    def test_backprop(self):
+
+        self.reset()
+
+        self.net.forwardprop()
+
+        # Check back prop
+        self.net.backprop(self.target_output)
+
+        # Check output layer
+        # delta_o = (a_o - t) * a_o * (1 - a_o)
+        np.testing.assert_almost_equal(self.net.output_layer.delta, 
+                                       np.array([
+                                           [-0.1218126],
+                                           [-0.12176264],
+                                           ]),
+                                       decimal=2)
+ 
+        np.testing.assert_almost_equal(self.net.output_layer.dc_dw, 
+                                       np.array([
+                                           [-0.24354],
+                                           [-0.16263621],
+                                           [-0.16793401]
+                                       ]),
+                                       decimal=4,
+                                       )
+
+        # Check hidden layer
+        np.testing.assert_almost_equal(self.l_hidden.delta,
+                                       np.array([
+                                           [-0.00027868, -0.00026038], 
+                                           [-0.00054014, -0.0005003], 
+                                           ]),
+                                       decimal=4,
+                                       )
+        np.testing.assert_almost_equal(self.l_hidden.dc_dw,
+                                       np.array([
+                                           [0,0],
+                                           [0,0],
+                                           [0,0],
+                                           ]),
+                                       decimal=1,
+                                       )
+
+    def test_update_weights(self):
+
+        self.reset()
+
+        self.net.forwardprop()
+        self.net.backprop(self.target_output)
+
+        self.net.updateweights()
+
+        # Check weights
+
+        np.testing.assert_almost_equal(self.net.output_layer.W,
+                                       np.array([
+                                           [0.03],
+                                           [0.01],
+                                           [0.02],
+                                           ]),
+                                       decimal=2,
+                                       )
+
+        np.testing.assert_almost_equal(self.l_hidden.W,
+                                       np.array([
+                                           [0.5, 0.5], 
+                                           [0.1, 0.2], 
+                                           [0.3, 0.4], 
+                                           ]),
+                                       decimal=1,
+                                       )
+
+
