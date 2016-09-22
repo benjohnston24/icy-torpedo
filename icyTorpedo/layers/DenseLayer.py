@@ -46,29 +46,36 @@ class DenseLayer(baseLayer):
 
         self.initialise_weights()
 
-    def initialise_weights(self):
+        self.W = np.array([])
+
+        self.bias_units = None
+
+    def initialise_weights(self, bias=1):
+
+        """Initialise the weights for the layer and assign to self.W
+
+        Parameters
+        -----------
+        
+        bias :  Include bias units in the weights matrix.  If bias units not required, set to 0
+
+        Returns
+        -----------
+
+        None
+        """
+
+
+
+        self.bias_units = bias
 
         # Weights
         # Produce random numbers between -0.5 and 0.5 
         # Include biases within the weights.  Biases are the first column of the 
         # inputs
-        weights_shape = (self.input_layer.num_units + 1, self.num_units)
+        weights_shape = (self.input_layer.num_units + bias, self.num_units)
 
         self.W = (np.random.randn(weights_shape[0], weights_shape[1]) - 0.5) * 0.1
-
-        if False:
-            # Create random integers of the required size with limits at -50 and 50
-            random_ints = np.random.randint(-50, 50, size=weights_shape)
-
-            # Add some salt
-            # using random_units += causes a casting issue from ints to floats 
-            random_ints = random_ints + np.random.randn(weights_shape[0], weights_shape[1])
-
-            # Scale down 
-            self.W = random_ints / 100
-
-            # Add 1 for the biases
-    #        self.W = np.random.randn(self.input_layer.num_units + 1, self.num_units) * 0.4
 
 
     def h_x(self):

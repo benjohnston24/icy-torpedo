@@ -42,7 +42,6 @@ def _main(*args, **kwargs):
     l_hidden = DenseLayer(input_layer=l_input, 
                           num_units=700, 
                           name="Hidden")
-    #l_hidden = DenseLayer(input_layer=l_input, num_units=(28**2), name="Hidden")
     l_output = DenseLayer(input_layer=l_hidden, 
                           num_units=10, 
                           linearity=Linear,
@@ -52,8 +51,8 @@ def _main(*args, **kwargs):
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
-            eta=FixedRate(0.00001),
-            max_epochs=1000,
+            eta=FixedRate(0.00002),
+            max_epochs=10000,
             verbose=True,
             log_data=False,
             )

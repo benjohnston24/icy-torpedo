@@ -32,6 +32,8 @@ def _options(*args, **kwargs):
                         help='Number of nodes for each hidden network')
     parser.add_argument('-m', '--max_epochs', type=int, default=1000, dest='epochs',
                         help='Maximum number of epochs')
+    parser.add_argumnet('-l', '--learn_rate', type=float, default=0.0001, dest='learn',
+                        help='Learning rate')
 
     args = parser.parse_args()
     return args
@@ -49,20 +51,23 @@ def _main(*args, **kwargs):
                                                              )
 
     l_input = InputLayer(num_units=28 ** 2, name="Input")
-    l_hidden = DenseLayer(input_layer=l_input, num_units=args.nodes, name="Hidden")
-    l_output = DenseLayer(input_layer=l_hidden, 
-                          num_units=10, 
-#                          linearity=Linear,
+    l_hidden = DenseLayer(input_layer=l_input,
+                          num_units=args.nodes,
+                          name="Hidden")
+    l_output = DenseLayer(input_layer=l_hidden,
+                          num_units=10,
+                          linearity=Linear,
                           name="Output")
 
     net = baseNetwork(
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
+            eta=FixedRate(args.learn),
             max_epochs=args.epochs,
             name=args.name,
             verbose=True,
-            log_data=False,
+            log_data=True,
             )
 
     # Log the descriptor

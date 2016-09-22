@@ -249,7 +249,6 @@ class baseNetwork(object):
             #train_err /= np.cast['float32'](self.x_train.shape[0])
 
             self.backprop(y_train_shuff)
-            eta = self.updateweights()
 
             # Check against validation set
             #Shuffle the data
@@ -261,7 +260,8 @@ class baseNetwork(object):
             valid_err = self.cost_function(output=valid_pred,
                                             target=self.y_valid)
 
-            #valid_err /= np.cast['float32'](self.x_valid.shape[0])
+            # TODO: An adaptive update to weights to speed up process
+            eta = self.updateweights()
                 
             # If this is a categorisation problem determine if correctly labeled
             if not self.regression:
