@@ -49,11 +49,26 @@ class DenseLayer(baseLayer):
     def initialise_weights(self):
 
         # Weights
-        # Produce a normal distribution of mean 0 and standard deviation 0.4
+        # Produce random numbers between -0.5 and 0.5 
         # Include biases within the weights.  Biases are the first column of the 
         # inputs
-        # Add 1 for the biases
-        self.W = np.random.randn(self.input_layer.num_units + 1, self.num_units) * 0.4
+        weights_shape = (self.input_layer.num_units + 1, self.num_units)
+
+        self.W = (np.random.randn(weights_shape[0], weights_shape[1]) - 0.5) * 0.1
+
+        if False:
+            # Create random integers of the required size with limits at -50 and 50
+            random_ints = np.random.randint(-50, 50, size=weights_shape)
+
+            # Add some salt
+            # using random_units += causes a casting issue from ints to floats 
+            random_ints = random_ints + np.random.randn(weights_shape[0], weights_shape[1])
+
+            # Scale down 
+            self.W = random_ints / 100
+
+            # Add 1 for the biases
+    #        self.W = np.random.randn(self.input_layer.num_units + 1, self.num_units) * 0.4
 
 
     def h_x(self):

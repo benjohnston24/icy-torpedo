@@ -52,7 +52,7 @@ def _main(*args, **kwargs):
     l_hidden = DenseLayer(input_layer=l_input, num_units=args.nodes, name="Hidden")
     l_output = DenseLayer(input_layer=l_hidden, 
                           num_units=10, 
-                          linearity=Linear,
+#                          linearity=Linear,
                           name="Output")
 
     net = baseNetwork(

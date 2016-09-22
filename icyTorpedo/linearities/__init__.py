@@ -5,3 +5,7 @@ from .Sigmoid import (
 from .Linear import (
         Linear,
         )
+
+from .Tanh import (
+        Tanh,
+        )

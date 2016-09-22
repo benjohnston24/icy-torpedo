@@ -69,6 +69,15 @@ class TestDenseLayer(unittest.TestCase):
         # Add 1 for baises
         self.assertEqual(l_hidden.W.shape, (3,2))
 
+    def test_weights_values(self):
+
+        l_in = InputLayer(num_units=100)
+        l_hidden = DenseLayer(input_layer=self.l_in, num_units=700)
+
+        self.assertTrue(np.max(l_hidden.W) <= 0.6)  # 0.5 is not a HARD rule
+        self.assertTrue(np.min(l_hidden.W) >= -0.6)
+
+
     @unittest.skip("Biases now included in weights matrix")
     def test_bias_units_shape(self):
 

@@ -409,5 +409,3 @@ class TestMultipleSamples(unittest.TestCase):
                                            ]),
                                        decimal=1,
                                        )
-
-

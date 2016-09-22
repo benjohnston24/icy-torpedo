@@ -28,7 +28,7 @@ class SquaredError(baseCostFunction):
         sqe = 0.5 * ((target - output) ** 2)
         """
 
-        return 0.5 * np.sum((target - output) ** 2)
+        return 0.5 * np.sum((target - output) ** 2) / (target.shape[0] * target.shape[1])
 
     @staticmethod
     def prime(output, target):

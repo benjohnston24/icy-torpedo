@@ -239,37 +239,17 @@ class baseNetwork(object):
             x_train_shuff, y_train_shuff = shuffle(self.x_train,
                                                    self.y_train,
                                                    random_state=int(time.time()))
+            #x_train_shuff, y_train_shuff = self.x_train, self.y_train
 
             # Predict based on current weights
-            ### TODO FINISH THIS
             train_pred = self.predict(x_train_shuff)
 
             train_err = self.cost_function(output=train_pred,
                                            target=y_train_shuff)
-            train_err /= np.cast['float32'](self.x_train.shape[0])
+            #train_err /= np.cast['float32'](self.x_train.shape[0])
 
             self.backprop(y_train_shuff)
             eta = self.updateweights()
-
-            if False:
-                x_train = x_train.reshape((1, -1))
-                y_train = y_train.reshape((1, -1))
-
-                # Apply the sample
-                self.input_layer.set_inputs(x_train)
-
-                # Update the weights using training set
-                self.forwardprop()
-                self.backprop(y_train)
-                eta = self.updateweights()
-
-                # Calculate the training error
-                train_pred = self.predict(x_train)
-
-                train_err += self.cost_function(output=train_pred,
-                                                target=y_train)
-
-            correct_class = 0
 
             # Check against validation set
             #Shuffle the data
@@ -281,27 +261,16 @@ class baseNetwork(object):
             valid_err = self.cost_function(output=valid_pred,
                                             target=self.y_valid)
 
-            valid_err /= np.cast['float32'](self.x_valid.shape[0])
-
-            if False:
-            # for x_valid, y_valid in zip(x_valid_shuff, y_valid_shuff):
-
-                x_valid = x_valid.reshape((1, -1))
-                y_valid = y_valid.reshape((1, -1))
+            #valid_err /= np.cast['float32'](self.x_valid.shape[0])
                 
-                valid_pred = self.predict(x_valid)
-
-                valid_err += self.cost_function(output=valid_pred,
-                                                target=y_valid)
-                 
             # If this is a categorisation problem determine if correctly labeled
             if not self.regression:
-                correct_class += (valid_pred.argmax() == self.y_valid.argmax())
+                correct_class = np.sum(valid_pred.argmax(axis=1) == self.y_valid.argmax(axis=1))
 
             # End of the iteration
             finish_time = time.time()
 
-            if valid_err < min_valid_err:
+            if (valid_err < min_valid_err):
                 improvement = "*"
                 min_valid_err = valid_err
                 best_epoch = epoch
@@ -330,6 +299,7 @@ class baseNetwork(object):
                 self.log("Early Stopping")
                 self.log("Best validation error %0.6f @ epoch %d" %
                         (min_valid_err, best_epoch))
+                break
 
         if not self.regression:
             return train_err, valid_err, correct_class
