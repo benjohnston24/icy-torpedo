@@ -71,9 +71,9 @@ class TestMnistDoubleSample(unittest.TestCase):
         self.network = DenseLayer(input_layer=self.l_hidden, num_units=10, name="Output")
 
         # Load a single image
-        self.image = load_mnist_train_images()[:2]
+        self.image = load_mnist_train_images()[:2,:]
         self.image = self.image.reshape((-1, 28 ** 2))
-        self.label = load_mnist_train_labels()[:2]
+        self.label = load_mnist_train_labels()[:2,:]
 
         # Split into training and validation tests
         # x_train, y_train, x_valid, y_valid = split_training_data(self.image, self.label)

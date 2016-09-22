@@ -33,6 +33,7 @@ class DenseLayer(baseLayer):
     def __init__(self, 
             num_units=1,
             linearity=Sigmoid,
+            bias=1,
             name="Dense Layer",
             *args,
             **kwargs):
@@ -46,9 +47,8 @@ class DenseLayer(baseLayer):
 
         self.initialise_weights()
 
-        self.W = np.array([])
+        self.initialise_weights(bias)
 
-        self.bias_units = None
 
     def initialise_weights(self, bias=1):
 

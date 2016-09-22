@@ -37,4 +37,5 @@ class Linear(baseLinearity):
 
         g'(z) = 1 
         """
+
         return np.ones(z.shape) 

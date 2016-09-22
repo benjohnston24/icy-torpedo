@@ -62,9 +62,9 @@ class TestDenseLayer(unittest.TestCase):
 
     def test_weights_shape(self):
 
-        test_data = np.ones((2, 1))
         l_in = InputLayer(num_units=2)
         l_hidden = DenseLayer(input_layer=self.l_in, num_units=2)
+        l_hidden.initialise_weights()
 
         # Add 1 for baises
         self.assertEqual(l_hidden.W.shape, (3,2))
@@ -73,6 +73,7 @@ class TestDenseLayer(unittest.TestCase):
 
         l_in = InputLayer(num_units=100)
         l_hidden = DenseLayer(input_layer=self.l_in, num_units=700)
+        l_hidden.initialise_weights()
 
         self.assertTrue(np.max(l_hidden.W) <= 0.6)  # 0.5 is not a HARD rule
         self.assertTrue(np.min(l_hidden.W) >= -0.6)

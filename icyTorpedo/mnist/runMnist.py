@@ -32,7 +32,7 @@ def _options(*args, **kwargs):
                         help='Number of nodes for each hidden network')
     parser.add_argument('-m', '--max_epochs', type=int, default=1000, dest='epochs',
                         help='Maximum number of epochs')
-    parser.add_argumnet('-l', '--learn_rate', type=float, default=0.0001, dest='learn',
+    parser.add_argument('-l', '--learn_rate', type=float, default=0.0001, dest='learn',
                         help='Learning rate')
 
     args = parser.parse_args()

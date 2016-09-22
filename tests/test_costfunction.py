@@ -36,34 +36,35 @@ class TestSquaredError(unittest.TestCase):
 
         c = SquaredError()
 
-        self.assertEqual(c(4, 2), 2)
+        self.assertEqual(c(np.array([[4]]), np.array([[2]])), 2)
+
 
     def test_squared_error_2(self):
 
         c = SquaredError()
 
-        self.assertEqual(c(-4, -2), 2)
+        self.assertEqual(c(np.array([[-4]]), np.array([[-2]])), 2)
 
     def test_squared_error_3(self):
 
         c = SquaredError()
 
-        self.assertEqual(c(output=4, target=-2), 18)
+        self.assertEqual(c(np.array([[4]]), np.array([[-2]])), 18)
 
     def test_squared_error_4(self):
 
         c = SquaredError()
 
-        self.assertEqual(c(output=-2, target=4), 18)
+        self.assertEqual(c(np.array([[-2]]), np.array([[4]])), 18)
 
     def test_squared_error_list(self):
 
-        target_list = np.array([0.1, 0.2])
-        output_list = np.array([0.3, 0.4])
+        target_list = np.array([[0.1, 0.2]])
+        output_list = np.array([[0.3, 0.4]])
 
         c = SquaredError()
 
-        self.assertEqual(c(output=output_list, target=target_list), 0.04)
+        self.assertEqual(c(output=output_list, target=target_list), 0.02)
 
     def test_squared_prime_1(self):
 
