@@ -300,12 +300,8 @@ class baseNetwork(object):
                 improvement = "*"
                 min_valid_err = valid_err
                 best_epoch = epoch
-                self.eta.value *= 1.05  # TODO implement this in a more generic way
 
             else:
-                self.eta.value *= 0.95
-                if self.eta.value < 0.000001:
-                    self.eta.value = 0.000001
                 improvement = ""
 
             iteration_record = \

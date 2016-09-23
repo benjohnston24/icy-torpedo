@@ -51,9 +51,9 @@ def _main(*args, **kwargs):
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
-            eta=FixedRate(0.03),
-            max_epochs=10000,
-            patience=100000,
+            eta=FixedRate(0.01),
+            max_epochs=1000000,
+            patience=10000000,
             verbose=True,
             log_data=True,
             )
