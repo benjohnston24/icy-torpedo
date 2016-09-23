@@ -40,7 +40,7 @@ def _main(*args, **kwargs):
 
     l_input = InputLayer(num_units=28 ** 2, name="Input")
     l_hidden = DenseLayer(input_layer=l_input, 
-                          num_units=700, 
+                          num_units=784, 
                           name="Hidden")
     l_output = DenseLayer(input_layer=l_hidden, 
                           num_units=10, 
@@ -51,10 +51,11 @@ def _main(*args, **kwargs):
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
-            eta=FixedRate(0.00002),
+            eta=FixedRate(0.03),
             max_epochs=10000,
+            patience=100000,
             verbose=True,
-            log_data=False,
+            log_data=True,
             )
 
     # Log the descriptor

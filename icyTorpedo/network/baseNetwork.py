@@ -6,6 +6,7 @@
 from icyTorpedo.layers import iterlayers
 from icyTorpedo.costfunctions import SquaredError
 from icyTorpedo.learningrates import FixedRate
+from icyTorpedo.linearities import Linear
 import numpy as np
 import os
 import time
@@ -154,7 +155,7 @@ class baseNetwork(object):
             layer.dc_dw = np.dot(delta, inputs).T 
 
 
-    def updateweights(self):
+    def updateweights(self, targets, psi=True):
         """Update the weights of the network in each layer:
 
         W -= eta * dC/dw
@@ -163,7 +164,11 @@ class baseNetwork(object):
         Parameters
         -----------
 
-        None
+        targets:  The target values for the network 
+        psi:      Use the pseudo-inverse if possible.  If the output
+                  layer has a linear activation and the flag is set
+                  to true, use the Moore-Penrose pseudo-inverse to
+                  calculate the output layer weights [default: True]
 
         Returns
         -----------
@@ -174,12 +179,35 @@ class baseNetwork(object):
 
         layer = self.output_layer
 
+        # If the output layer is linear use the pseudo inverse to calculate weights
+        # W = TA+ where W are the weights of the output layer, T the target values
+        # and A+ the Moore-Penrose inverse of the hidden layer activations
+        # P. de Chazal, J. Tapson and A. van Schaik, "A comparison of extreme learning machines 
+        # and back-propagation trained feed-forward networks processing the mnist database," 
+        # 2015 IEEE International Conference on Acoustics,
+        # Speech and Signal Processing (ICASSP), South Brisbane, QLD, 2015, pp. 2165-2168.
+        # doi: 10.1109/ICASSP.2015.7178354
+        if psi and isinstance(layer.linearity, Linear):
+            # Add the bias units to the input
+            inputs = np.hstack((
+                np.ones((layer.input_layer.a.shape[0], 1)),
+                layer.input_layer.a))
+
+            a_plus = np.linalg.pinv(inputs)
+
+            # W = TA+
+            layer.W = np.dot(a_plus, targets)
+
+            # Move to next layer
+            layer = layer.input_layer
+
+
         # Get the learning rate, if the learning rate changes we only want
         # to do this once per weight update
         learning_rate = self.eta()
 
         while layer.input_layer is not None:
-            layer.W -= learning_rate * layer.dc_dw
+            layer.W -= learning_rate * (layer.dc_dw / targets.shape[0])
 
             layer = layer.input_layer
 
@@ -246,23 +274,21 @@ class baseNetwork(object):
 
             train_err = self.cost_function(output=train_pred,
                                            target=y_train_shuff)
-            #train_err /= np.cast['float32'](self.x_train.shape[0])
 
+            # Run backprop
+            # Reload the training set for updating the weights
             self.backprop(y_train_shuff)
+            # TODO: An adaptive update to weights to speed up process
+            eta = self.updateweights(y_train_shuff)
+ 
 
             # Check against validation set
-            #Shuffle the data
-            #x_valid_shuff, y_valid_shuff = shuffle(self.x_valid,
-            #                                       self.y_valid,
-            #                                       random_state=int(time.time()))
             valid_pred = self.predict(self.x_valid)
 
             valid_err = self.cost_function(output=valid_pred,
                                             target=self.y_valid)
 
-            # TODO: An adaptive update to weights to speed up process
-            eta = self.updateweights()
-                
+               
             # If this is a categorisation problem determine if correctly labeled
             if not self.regression:
                 correct_class = np.sum(valid_pred.argmax(axis=1) == self.y_valid.argmax(axis=1))
@@ -274,7 +300,12 @@ class baseNetwork(object):
                 improvement = "*"
                 min_valid_err = valid_err
                 best_epoch = epoch
+                self.eta.value *= 1.05  # TODO implement this in a more generic way
+
             else:
+                self.eta.value *= 0.95
+                if self.eta.value < 0.000001:
+                    self.eta.value = 0.000001
                 improvement = ""
 
             iteration_record = \
