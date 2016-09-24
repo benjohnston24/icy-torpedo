@@ -21,6 +21,7 @@ __license__ = 'MPL v2.0'
 def _main(*args, **kwargs):
 
     train_images = load_mnist_train_images()
+
     train_images = train_images.reshape((-1, 28 ** 2))
     train_labels = load_mnist_train_labels()
 
@@ -51,11 +52,11 @@ def _main(*args, **kwargs):
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
-            eta=FixedRate(0.03),
-            max_epochs=10000,
-            patience=100000,
+            eta=FixedRate(0.0001 / 42000),
+            max_epochs=100,
+            patience=100,
             verbose=True,
-            log_data=True,
+            log_data=False,
             )
 
     # Log the descriptor

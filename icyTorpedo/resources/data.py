@@ -212,6 +212,10 @@ def load_mnist_images(filename=MNIST_TRAIN_IMAGES):
 
         # Scale the data
         data /= 255
+
+        # Shift to be between -1 and 1
+        data -= 0.5
+        data /= 0.5
         return data
 
 def load_mnist_labels(filename=MNIST_TRAIN_LABELS):

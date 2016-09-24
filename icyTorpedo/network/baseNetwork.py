@@ -207,7 +207,7 @@ class baseNetwork(object):
         learning_rate = self.eta()
 
         while layer.input_layer is not None:
-            layer.W -= learning_rate * (layer.dc_dw / targets.shape[0])
+            layer.W -= (learning_rate * layer.dc_dw)  # (layer.dc_dw / targets.shape[0])
 
             layer = layer.input_layer
 
@@ -255,6 +255,7 @@ class baseNetwork(object):
         else:
             self.log(LINE)
 
+
         for epoch in range(self.max_epochs):
 
             # Time the iteration 
@@ -264,10 +265,17 @@ class baseNetwork(object):
 
             # Implement training
             # Shuffle the data
-            x_train_shuff, y_train_shuff = shuffle(self.x_train,
-                                                   self.y_train,
-                                                   random_state=int(time.time()))
-            #x_train_shuff, y_train_shuff = self.x_train, self.y_train
+            #x_train_shuff, y_train_shuff = shuffle(self.x_train,
+            #                                       self.y_train,
+            #                                       random_state=int(time.time()))
+
+            x_train_shuff, y_train_shuff = self.x_train, self.y_train
+            self.predict(x_train_shuff)
+            # Run backprop
+            # Reload the training set for updating the weights
+            self.backprop(y_train_shuff)
+            # TODO: An adaptive update to weights to speed up process
+            eta = self.updateweights(y_train_shuff)
 
             # Predict based on current weights
             train_pred = self.predict(x_train_shuff)
@@ -275,12 +283,6 @@ class baseNetwork(object):
             train_err = self.cost_function(output=train_pred,
                                            target=y_train_shuff)
 
-            # Run backprop
-            # Reload the training set for updating the weights
-            self.backprop(y_train_shuff)
-            # TODO: An adaptive update to weights to speed up process
-            eta = self.updateweights(y_train_shuff)
- 
 
             # Check against validation set
             valid_pred = self.predict(self.x_valid)
@@ -300,12 +302,12 @@ class baseNetwork(object):
                 improvement = "*"
                 min_valid_err = valid_err
                 best_epoch = epoch
-                self.eta.value *= 1.05  # TODO implement this in a more generic way
+#               self.eta.value *= 1.05  # TODO implement this in a more generic way
 
             else:
-                self.eta.value *= 0.95
-                if self.eta.value < 0.000001:
-                    self.eta.value = 0.000001
+#                self.eta.value *= 0.95
+#                if self.eta.value < 0.000001:
+#                    self.eta.value = 0.000001
                 improvement = ""
 
             iteration_record = \

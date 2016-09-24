@@ -199,9 +199,9 @@ class TestMNISTData(unittest.TestCase):
                          "Each test set image should be 28 x 28 pixels")
         self.assertEqual(images.shape[2], 28,
                          "Each test set image should be 28 x 28 pixels")
-        self.assertTrue(np.amax(images) <= 1,
+        self.assertTrue(np.amax(images) == 1,
                          "Image values must be less than 1")
-        self.assertTrue(np.amin(images) >= 0,
+        self.assertTrue(np.amin(images) == -1,
                          "Image values must be less than 0")
 
 
@@ -242,9 +242,9 @@ class TestMNISTData(unittest.TestCase):
                          "Each test set image should be 28 x 28 pixels")
         self.assertEqual(images.shape[2], 28,
                          "Each test set image should be 28 x 28 pixels")
-        self.assertTrue(np.amax(images) <= 1,
+        self.assertTrue(np.max(images) == 1,
                          "Image values must be less than 1")
-        self.assertTrue(np.amin(images) >= 0,
+        self.assertTrue(np.min(images) == -1,
                          "Image values must be less than 0")
 
     def test_load_mnist_training_labels(self):

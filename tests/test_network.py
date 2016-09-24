@@ -144,7 +144,7 @@ class TestNetwork(unittest.TestCase):
         self.net.forwardprop()
         self.net.backprop(self.target_output)
 
-        self.net.updateweights()
+        self.net.updateweights(self.target_output)
 
         # Check weights
 
@@ -388,7 +388,7 @@ class TestMultipleSamples(unittest.TestCase):
         self.net.forwardprop()
         self.net.backprop(self.target_output)
 
-        self.net.updateweights()
+        self.net.updateweights(self.target_output)
 
         # Check weights
 

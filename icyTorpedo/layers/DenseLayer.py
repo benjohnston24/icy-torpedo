@@ -75,7 +75,8 @@ class DenseLayer(baseLayer):
         # inputs
         weights_shape = (self.input_layer.num_units + bias, self.num_units)
 
-        self.W = (np.random.randn(weights_shape[0], weights_shape[1]) - 0.5) * 0.1
+#        self.W = (np.random.randn(weights_shape[0], weights_shape[1]) - 0.5) * 0.1
+        self.W = np.random.uniform(-0.05, 0.05, weights_shape)
 
 
     def h_x(self):
