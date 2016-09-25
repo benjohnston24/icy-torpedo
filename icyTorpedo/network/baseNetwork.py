@@ -96,10 +96,10 @@ class baseNetwork(object):
 
         return output
 
-    def forwardprop(self):
+    def forwardprop(self, targets=None):
         """Iterate through each of the layers and compute the activations at each node"""
         for layer in iterlayers(self.output_layer):
-            layer.a_h() # Compute the activations
+            layer.a_h(targets=targets) # Compute the activations
 
     def backprop(self, targets):
         """Execute back propogation
@@ -179,29 +179,6 @@ class baseNetwork(object):
 
         layer = self.output_layer
 
-        # If the output layer is linear use the pseudo inverse to calculate weights
-        # W = TA+ where W are the weights of the output layer, T the target values
-        # and A+ the Moore-Penrose inverse of the hidden layer activations
-        # P. de Chazal, J. Tapson and A. van Schaik, "A comparison of extreme learning machines 
-        # and back-propagation trained feed-forward networks processing the mnist database," 
-        # 2015 IEEE International Conference on Acoustics,
-        # Speech and Signal Processing (ICASSP), South Brisbane, QLD, 2015, pp. 2165-2168.
-        # doi: 10.1109/ICASSP.2015.7178354
-        if psi and isinstance(layer.linearity, Linear):
-            # Add the bias units to the input
-            inputs = np.hstack((
-                np.ones((layer.input_layer.a.shape[0], 1)),
-                layer.input_layer.a))
-
-            a_plus = np.linalg.pinv(inputs)
-
-            # W = TA+
-            layer.W = np.dot(a_plus, targets)
-
-            # Move to next layer
-            layer = layer.input_layer
-
-
         # Get the learning rate, if the learning rate changes we only want
         # to do this once per weight update
         learning_rate = self.eta()
@@ -270,7 +247,8 @@ class baseNetwork(object):
             #                                       random_state=int(time.time()))
 
             x_train_shuff, y_train_shuff = self.x_train, self.y_train
-            self.predict(x_train_shuff)
+            self.input_layer.set_inputs(x_train_shuff)
+            self.forwardprop(targets=y_train_shuff)
             # Run backprop
             # Reload the training set for updating the weights
             self.backprop(y_train_shuff)
@@ -359,7 +337,6 @@ class baseNetwork(object):
             log_iter = 0
             while os.path.exists("{}{}.{}".format(log_basename, self.log_extension, log_iter)):
                 log_iter += 1
-
             self.log_filename = "{}{}.{}".format(log_basename, self.log_extension, log_iter)
             self.save_params_filename = "{}{}.{}".format(log_basename, self.save_params_extension, log_iter)
         else:

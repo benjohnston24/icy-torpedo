@@ -35,9 +35,13 @@ def _main(*args, **kwargs):
         y_valid = y_train
 
     else:
-        x_train, y_train, x_valid, y_valid = split_training_data(train_images,
-                                                                 train_labels,
-                                                                 )
+        #x_train, y_train, x_valid, y_valid = split_training_data(train_images,
+        #                                                         train_labels,
+        #                                                         )
+        x_train = train_images
+        x_valid = train_images
+        y_train = train_labels
+        y_valid = train_labels
 
     l_input = InputLayer(num_units=28 ** 2, name="Input")
     l_hidden = DenseLayer(input_layer=l_input, 
@@ -45,18 +49,18 @@ def _main(*args, **kwargs):
                           name="Hidden")
     l_output = DenseLayer(input_layer=l_hidden, 
                           num_units=10, 
-                          linearity=Linear,
+                          linearity=Linear(),
                           name="Output")
 
     net = baseNetwork(
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
-            eta=FixedRate(0.0001 / 42000),
+            eta=FixedRate(0.001),
             max_epochs=100,
             patience=100,
             verbose=True,
-            log_data=False,
+            log_data=True,
             )
 
     # Log the descriptor

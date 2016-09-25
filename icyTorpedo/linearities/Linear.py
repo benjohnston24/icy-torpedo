@@ -17,10 +17,11 @@ __license__ = 'MPL v2.0'
 class Linear(baseLinearity):
     """Linear function class"""
 
-    def __init__(self, name="Linear", *args, **kwargs):
+    def __init__(self, name="Linear", pseudo_inverse=True, *args, **kwargs):
         super(Linear, self).__init__(*args, **kwargs)
 
         self.name = name
+        self.pseudo_inverse = pseudo_inverse
 
     @classmethod
     def __call__(cls, z):

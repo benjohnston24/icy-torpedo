@@ -5,7 +5,7 @@
 # Imports
 import numpy as np
 from .baseLayer import baseLayer
-from icyTorpedo.linearities import Sigmoid
+from icyTorpedo.linearities import Sigmoid, Linear
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -32,7 +32,7 @@ class DenseLayer(baseLayer):
     """
     def __init__(self, 
             num_units=1,
-            linearity=Sigmoid,
+            linearity=Sigmoid(),
             bias=1,
             name="Dense Layer",
             *args,
@@ -43,9 +43,7 @@ class DenseLayer(baseLayer):
                 *args, 
                 **kwargs)
 
-        self.linearity = linearity() 
-
-        self.initialise_weights()
+        self.linearity = linearity
 
         self.initialise_weights(bias)
 
@@ -79,7 +77,7 @@ class DenseLayer(baseLayer):
         self.W = np.random.uniform(-0.05, 0.05, weights_shape)
 
 
-    def h_x(self):
+    def h_x(self, *args, **kwargs):
         """Compute the non linearised activations
         
         Parameters
@@ -96,20 +94,39 @@ class DenseLayer(baseLayer):
         linearised activations
 
         """
-        ## Add the biases
         inputs = np.hstack((
             np.ones((self.input_layer.a.shape[0],1)),
             self.input_layer.a))
+ 
+        # If the linearity is linear and pseudo-inverse selected
+        if isinstance(self.linearity, Linear) and self.linearity.pseudo_inverse \
+                and (kwargs['targets'] is not None):
+            # If the output layer is linear use the pseudo inverse to calculate weights
+            # W = TA+ where W are the weights of the output layer, T the target values
+            # and A+ the Moore-Penrose inverse of the hidden layer activations
+            # P. de Chazal, J. Tapson and A. van Schaik, "A comparison of extreme learning machines 
+            # and back-propagation trained feed-forward networks processing the mnist database," 
+            # 2015 IEEE International Conference on Acoustics,
+            # Speech and Signal Processing (ICASSP), South Brisbane, QLD, 2015, pp. 2165-2168.
+            # doi: 10.1109/ICASSP.2015.7178354
+            # Add the bias units to the input
+            a_plus = np.linalg.pinv(inputs)
+
+            # W = TA+
+            self.W = np.dot(a_plus, kwargs['targets'])
+
+        ## Add the biases
         self.h = np.dot(inputs, self.W)
         return self.h
 
 
-    def a_h(self):
+    def a_h(self, *args, **kwargs):
         """Compute the feedforward calculations for the layer
 
         a = linearity(h_x)
         """
-        self.a = self.linearity(self.h_x())
+        self.a = self.linearity(self.h_x(*args, **kwargs))
+
         return self.a
 
     def __str__(self):
