@@ -25,9 +25,9 @@ setup(
             'basicmnist=icyTorpedo.mnist:_main',
             ],
         },
-    # package_data={
-    #    '': ['*.pkl'],
-    #    },
+    package_data={
+        '': ['*.csv', '*.gz'],
+        },
     # license=open('LICENSE.txt').read(),
     # long_description=open('README.txt').read(),
     )
