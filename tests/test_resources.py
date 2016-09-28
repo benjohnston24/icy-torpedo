@@ -79,6 +79,26 @@ class TestResources(unittest.TestCase):
         self.assertEqual(train_data[0].shape[1], train_data[2].shape[1])
         self.assertEqual(train_data[1].shape[1], train_data[3].shape[1])
 
+    def test_zero_mean(self):
+        """Test the loaded data has zero mean"""
+        train_data = resources.load_training_data()
+        train_data = resources.remove_incomplete_data(train_data)
+        x, y = resources.extract_image_landmarks(train_data)
+
+        np.testing.assert_almost_equal(np.mean(x), 0, decimal=4)
+        np.testing.assert_almost_equal(np.mean(y), 0, decimal=4)
+
+    def test_max_min_training_data(self):
+        """Test the max and min of the data"""
+        train_data = resources.load_training_data()
+        train_data = resources.remove_incomplete_data(train_data)
+        x, y = resources.extract_image_landmarks(train_data)
+
+        self.assertTrue(np.max(x) <= 1)
+        self.assertTrue(np.min(x) >= -1)
+        self.assertTrue(np.max(y) <= 1)
+        self.assertTrue(np.min(y) >= -1)
+
     def test_load_data_different(self):
         """Test the loaded data is in fact different"""
         x_train, y_train, x_valid, y_valid = resources.load_data()
@@ -115,36 +135,6 @@ class TestResources(unittest.TestCase):
         x, y = resources.extract_image_landmarks(train_data)
         np.testing.assert_allclose(x[0], [0, 0, 0, 0])
 
-    def test_image_landmark_extraction_y_0(self):
-        """Test landmark extraction of extract_image_landmarks 0"""
-        train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 0], np.float32((1 - 48) / 48))
-
-    def test_image_landmark_extraction_y_1(self):
-        """Test landmark extraction of extract_image_landmarks 1"""
-        train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 1], np.float32((2 - 48) / 48))
-
-    def test_image_landmark_extraction_y_2(self):
-        """Test landmark extraction of extract_image_landmarks 2"""
-        train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 2], np.float32((3 - 48) / 48))
-
-    def test_image_landmark_extraction_y_3(self):
-        """Test landmark extraction of extract_image_landmarks 3"""
-        train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 3], np.float32((4 - 48) / 48))
-
-    def test_image_landmark_extraction_y_4(self):
-        """Test landmark extraction of extract_image_landmarks 4"""
-        train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 4], np.float32((5 - 48) / 48))
-
     def test_splitting_training_data(self):
         """Test default train / valid set split"""
         train_data = pandas.DataFrame({
@@ -160,7 +150,6 @@ class TestResources(unittest.TestCase):
         })
 
         # Generate random images
-
         x, y = resources.extract_image_landmarks(train_data)
 
         for split_ratio in [0.5, 0.7]:

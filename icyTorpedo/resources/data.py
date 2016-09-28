@@ -57,11 +57,11 @@ def extract_image_landmarks(data_in):
 
     # Extract the images
     # Scale the images
-    x = np.vstack(data_in['Image'].values) / 255.
+    x = np.vstack(data_in['Image'].values)
+    x /= np.max(x)
 
     # Centre to the mean
-    x -= np.mean(x, axis=1).reshape((x.shape[0], -1))
-    x -= np.mean(x, axis=0)
+    x -= np.mean(x)
 
     x = x.astype(np.float32)
 
@@ -70,7 +70,8 @@ def extract_image_landmarks(data_in):
     labels.pop(labels.index('Image'))
     y = data_in[labels].values
 
-    y = (y - 48) / 48  # Scale between -1 and 1
+    y = y / np.max(y)
+    y = y - np.mean(y)
 
     y = y.astype(np.float32)
 
