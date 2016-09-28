@@ -21,8 +21,8 @@ class baseLinearity(object):
 
     def __call__(self):
         """Override this method with the evaluation of the activation"""
-        pass  # pragma: no cover 
+        pass  # pragma: no cover
 
     def prime(self):
         """Override this method with the derviative of the activation"""
-        pass  # pragma: no cover 
+        pass  # pragma: no cover

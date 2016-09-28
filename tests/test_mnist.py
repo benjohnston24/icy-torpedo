@@ -68,9 +68,14 @@ class TestMnistSingleSample(unittest.TestCase):
 class TestMnistDoubleSample(unittest.TestCase):
 
     def setUp(self):
-        self.l_in = InputLayer(num_units=28 ** 2, name="Input")
-        self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
-        self.network = DenseLayer(input_layer=self.l_hidden, num_units=10, name="Output")
+        self.l_in = InputLayer(num_units=28 ** 2,
+                               name="Input")
+        self.l_hidden = DenseLayer(input_layer=self.l_in,
+                                   num_units=2,
+                                   name="Hidden")
+        self.network = DenseLayer(input_layer=self.l_hidden,
+                                  num_units=10,
+                                  name="Output")
 
         # Load a single image
         self.image = load_mnist_train_images()[:2, :]
@@ -78,7 +83,6 @@ class TestMnistDoubleSample(unittest.TestCase):
         self.label = load_mnist_train_labels()[:2, :]
 
         # Split into training and validation tests
-        # x_train, y_train, x_valid, y_valid = split_training_data(self.image, self.label)
         self.x_train = self.image
         y_train = self.label
         x_valid = self.x_train
@@ -100,7 +104,8 @@ class TestMnistDoubleSample(unittest.TestCase):
 
         predictions = self.net.predict(self.x_train)
 
-        # Just check the shape, not the output as we are not trying hard to train the network
+        # Just check the shape, not the output as we are not
+        # trying hard to train the network
         self.assertEqual(predictions.shape, (2, 10))
 
         np.testing.assert_almost_equal(train_err, 0, decimal=0)

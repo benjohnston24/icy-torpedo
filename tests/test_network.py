@@ -180,7 +180,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.0",
                          "incorrect pickle filename")
 
-    @patch('os.path.exists', log_file_mock_two_files)
+    @patch('os.path.exists', log_file_mock_two_files)  # noqa: F811
     def test_prepare_log_exists(self):
         """Check the log filenames are correctly established - two logs of the same name already exist"""
 
@@ -293,14 +293,14 @@ class TestMultipleSamples(unittest.TestCase):
             [0.01],
             [0.02]])
 
-        # Target output of network 
-        self.target_output = np.array([ 
+        # Target output of network
+        self.target_output = np.array([
             [1],
             [1],
             ])
 
         self.net = baseNetwork(
-                network_layers = [self.l_in, self.l_hidden, self.output_layer],
+                network_layers=[self.l_in, self.l_hidden, self.output_layer],
                 targets=self.target_output,
                 name='baseNetwork',
                 log_data=False,
@@ -340,14 +340,14 @@ class TestMultipleSamples(unittest.TestCase):
 
         # Check output layer
         # delta_o = (a_o - t) * a_o * (1 - a_o)
-        np.testing.assert_almost_equal(self.net.output_layer.delta, 
+        np.testing.assert_almost_equal(self.net.output_layer.delta,
                                        np.array([
                                            [-0.1218126],
                                            [-0.12176264],
                                            ]),
                                        decimal=2)
- 
-        np.testing.assert_almost_equal(self.net.output_layer.dc_dw, 
+
+        np.testing.assert_almost_equal(self.net.output_layer.dc_dw,
                                        np.array([
                                            [-0.24354],
                                            [-0.16263621],
@@ -359,16 +359,16 @@ class TestMultipleSamples(unittest.TestCase):
         # Check hidden layer
         np.testing.assert_almost_equal(self.l_hidden.delta,
                                        np.array([
-                                           [-0.00027868, -0.00026038], 
-                                           [-0.00054014, -0.0005003], 
+                                           [-0.00027868, -0.00026038],
+                                           [-0.00054014, -0.0005003],
                                            ]),
                                        decimal=4,
                                        )
         np.testing.assert_almost_equal(self.l_hidden.dc_dw,
                                        np.array([
-                                           [0,0],
-                                           [0,0],
-                                           [0,0],
+                                           [0, 0],
+                                           [0, 0],
+                                           [0, 0],
                                            ]),
                                        decimal=1,
                                        )
@@ -395,9 +395,9 @@ class TestMultipleSamples(unittest.TestCase):
 
         np.testing.assert_almost_equal(self.l_hidden.W,
                                        np.array([
-                                           [0.5, 0.5], 
-                                           [0.1, 0.2], 
-                                           [0.3, 0.4], 
+                                           [0.5, 0.5],
+                                           [0.1, 0.2],
+                                           [0.3, 0.4],
                                            ]),
                                        decimal=1,
                                        )

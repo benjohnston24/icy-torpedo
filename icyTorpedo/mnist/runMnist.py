@@ -5,7 +5,6 @@
 """Console script for running mnist"""
 
 # Imports
-import sys
 import argparse
 from icyTorpedo.resources import load_mnist_train_images, \
         load_mnist_train_labels, split_training_data
@@ -13,7 +12,6 @@ from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.learningrates import FixedRate
 from icyTorpedo.linearities import Linear, Tanh
-import numpy as np
 
 
 __author__ = 'Ben Johnston'
@@ -36,7 +34,6 @@ def _options(*args, **kwargs):
                         help='Learning rate')
     parser.add_argument('-p', '--patience', type=int, default=100, dest='patience',
                         help='Number of epochs after finding the best validation error to stop training')
-
 
     args = parser.parse_args()
     return args
@@ -78,8 +75,7 @@ def _main(*args, **kwargs):
     # Log the descriptor
     net.log(str(net))
 
-    net.train() 
-
+    net.train()
 
 if __name__ == "__main__":
     _main()

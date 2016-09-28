@@ -26,17 +26,17 @@ class Linear(baseLinearity):
     @classmethod
     def __call__(cls, z):
         """Compute the linear function
-        
+
         g(z) = z
         """
 
-        return z 
+        return z
 
     @classmethod
     def prime(cls, z):
-        """Compute the derivative of the linear 
+        """Compute the derivative of the linear
 
-        g'(z) = 1 
+        g'(z) = 1
         """
 
-        return np.ones(z.shape) 
+        return np.ones(z.shape)

@@ -43,7 +43,6 @@ class TestRunMnist(unittest.TestCase):
         self.assertEqual(args.nodes, 10)
         self.assertEqual(args.epochs, 12)
 
-
     @patch('icyTorpedo.network.baseNetwork.log')
     @patch('sys.stdout')
     def test_main_runs(self, _, __):

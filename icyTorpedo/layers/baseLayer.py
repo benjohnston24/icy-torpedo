@@ -24,7 +24,6 @@ class baseLayer(object):
 
     def __init__(self, input_layer=None, num_units=None, name=None):
 
-        #self.input_shape = input_layer.num_units
         self.input_layer = input_layer
 
         self.name = name
@@ -43,7 +42,7 @@ def iterlayers(output_layer):
     Returns
     ------------
     A generator if layers in the list
-    
+
     """
 
     layers = []
@@ -77,6 +76,3 @@ def addbiasunits(input_activations):
     return np.hstack((
         np.ones((input_activations.shape[0], 1)),
         input_activations))
-
-
-

@@ -6,7 +6,6 @@
 from icyTorpedo.layers import iterlayers, addbiasunits
 from icyTorpedo.costfunctions import SquaredError
 from icyTorpedo.learningrates import FixedRate
-from icyTorpedo.linearities import Linear
 import numpy as np
 import os
 import time
@@ -54,21 +53,21 @@ class baseNetwork(object):
             layer = layer.input_layer
 
         # Define the input layer as the first layer in the list
-        self.input_layer = layer 
+        self.input_layer = layer
 
         # Define characteristics of the network
-        self.cost_function = costfunction() 
+        self.cost_function = costfunction()
         self.eta = eta
         self.max_epochs = max_epochs
         self.patience = patience
         self.verbose = verbose
-        self.log_data = log_data 
+        self.log_data = log_data
         self.name = name
 
         # Reserve some variables for storing training data
-        self.x_train, self.y_train = train_data 
-        self.x_valid, self.y_valid = valid_data 
-        self.x_test, self.y_test = test_data 
+        self.x_train, self.y_train = train_data
+        self.x_valid, self.y_valid = valid_data
+        self.x_test, self.y_test = test_data
 
         # Flag to indicate if the problem is a regression problem
         self.regression = regression
@@ -88,9 +87,9 @@ class baseNetwork(object):
         output += "Cost Function: %s\n" % str(self.cost_function)
         output += "Learning Rate: %s\n" % str(self.eta)
         output += "x_train shape: %s\ty_train shape: %s\n" % \
-                (self.x_train.shape, self.y_train.shape)
+                  (self.x_train.shape, self.y_train.shape)
         output += "x_valid shape: %s\ty_valid shape: %s\n" % \
-                (self.x_valid.shape, self.y_valid.shape)
+                  (self.x_valid.shape, self.y_valid.shape)
         output += "Max Epochs: %d\n" % self.max_epochs
         output += "Patience: %d\n" % self.patience
 
@@ -99,13 +98,13 @@ class baseNetwork(object):
     def forwardprop(self, targets=None):
         """Iterate through each of the layers and compute the activations at each node"""
         for layer in iterlayers(self.output_layer):
-            layer.a_h(targets=targets) # Compute the activations
+            layer.a_h(targets=targets)  # Compute the activations
 
     def backprop(self, targets):
         """Execute back propogation
-        
-        First compute the rate of the error at the output 
-        delta_o = dC/da * d_linearity 
+
+        First compute the rate of the error at the output
+        delta_o = dC/da * d_linearity
                 = costfunction' * linearity'
 
         dC_db = delta_o; Change of cost with respect to bias
@@ -120,7 +119,7 @@ class baseNetwork(object):
         # Start at the output layer
         delta_o = self.cost_function.prime(output=self.output_layer.a,
                                            target=targets) * \
-                self.output_layer.linearity.prime(self.output_layer.h)
+            self.output_layer.linearity.prime(self.output_layer.h)
         self.output_layer.delta = delta_o
 
         # Store for later use
@@ -129,27 +128,26 @@ class baseNetwork(object):
         # Add the bias units of the previous layer
         inputs = addbiasunits(self.output_layer.input_layer.a)
 
-        self.output_layer.dc_dw = np.dot(inputs.T, delta_o) 
+        self.output_layer.dc_dw = np.dot(inputs.T, delta_o)
 
         # Backprop over remaining layers
         for layer_idx in range(2, len(self.network_layers)):
 
             layer = self.network_layers[-layer_idx]
             layer_after = self.network_layers[-layer_idx + 1]
-            layer_before = self.network_layers[-layer_idx -1]
+            layer_before = self.network_layers[-layer_idx - 1]
 
             # delta = (w^l+1 * delta^(l+1)) * sigma'(h^l)
             # Strip out the biases
-            delta = np.dot(layer_after.W[1:,:], delta.T) * \
-                    layer.linearity.prime(layer.h).T
+            delta = np.dot(layer_after.W[1:, :], delta.T) * \
+                layer.linearity.prime(layer.h).T
 
             layer.delta = delta
 
             # Add the bias units to the input
             inputs = addbiasunits(layer_before.a)
 
-            layer.dc_dw = np.dot(delta, inputs).T 
-
+            layer.dc_dw = np.dot(delta, inputs).T
 
     def updateweights(self, targets, psi=True):
         """Update the weights of the network in each layer:
@@ -160,7 +158,7 @@ class baseNetwork(object):
         Parameters
         -----------
 
-        targets:  The target values for the network 
+        targets:  The target values for the network
         psi:      Use the pseudo-inverse if possible.  If the output
                   layer has a linear activation and the flag is set
                   to true, use the Moore-Penrose pseudo-inverse to
@@ -190,27 +188,25 @@ class baseNetwork(object):
         """Log the required information e.g. column headings prior to training"""
 
         header = \
-             "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|".format(
-                 "Epoch",
-                 "Train Error",
-                 "Valid Error",
-                 "Valid / Train Error",
-                 "Time",
-                 "Best Error",
-                 "Learning Rate",
-                 )
+            "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|".format(
+                "Epoch",
+                "Train Error",
+                "Valid Error",
+                "Valid / Train Error",
+                "Time",
+                "Best Error",
+                "Learning Rate",
+                )
 
         if not self.regression:
             header += "{:^20}|".format("Accuracy (%)")
 
         return header
 
-
     def train(self):
         """Train the neural network
-        
+
         Simple version, apply each of the training examples in the same order per iteration
-        
         """
 
         min_valid_err = np.inf
@@ -228,10 +224,9 @@ class baseNetwork(object):
         else:
             self.log(LINE)
 
-
         for epoch in range(self.max_epochs):
 
-            # Time the iteration 
+            # Time the iteration
             start_time = time.time()
 
             train_err = 0
@@ -258,14 +253,12 @@ class baseNetwork(object):
             train_err = self.cost_function(output=train_pred,
                                            target=y_train_shuff)
 
-
             # Check against validation set
             valid_pred = self.predict(self.x_valid)
 
             valid_err = self.cost_function(output=valid_pred,
-                                            target=self.y_valid)
+                                           target=self.y_valid)
 
-               
             # If this is a categorisation problem determine if correctly labeled
             if not self.regression:
                 correct_class = np.sum(valid_pred.argmax(axis=1) == self.y_valid.argmax(axis=1))
@@ -277,12 +270,12 @@ class baseNetwork(object):
                 improvement = "*"
                 min_valid_err = valid_err
                 best_epoch = epoch
-#               self.eta.value *= 1.05  # TODO implement this in a more generic way
+                # self.eta.value *= 1.05  # TODO implement this in a more generic way
 
             else:
-#                self.eta.value *= 0.95
-#                if self.eta.value < 0.000001:
-#                    self.eta.value = 0.000001
+                # self.eta.value *= 0.95
+                # if self.eta.value < 0.000001:
+                #     self.eta.value = 0.000001
                 improvement = ""
 
             iteration_record = \
@@ -306,13 +299,13 @@ class baseNetwork(object):
 
                 self.log("Early Stopping")
                 self.log("Best validation error %0.6f @ epoch %d" %
-                        (min_valid_err, best_epoch))
+                         (min_valid_err, best_epoch))
                 break
 
         if not self.regression:
             return train_err, valid_err, correct_class
         else:
-            return train_err, valid_err, None 
+            return train_err, valid_err, None
 
     def predict(self, inputs):
 

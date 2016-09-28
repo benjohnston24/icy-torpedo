@@ -3,9 +3,8 @@
 # S.D.G
 
 # Imports
-import numpy as np
 from .baseLayer import baseLayer
-from icyTorpedo.linearities import Linear 
+from icyTorpedo.linearities import Linear
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -14,19 +13,18 @@ __license__ = 'MPL v2.0'
 
 
 class InputLayer(baseLayer):
-    """Input Layer class 
+    """Input Layer class
 
     Parameters
     -----------
 
-    inputs :  Input values as an np.array with dimensions (#samples, #features) 
+    inputs :  Input values as an np.array with dimensions (#samples, #features)
     name   :  A string of the name for the layer
     """
 
-    #def __init__(self, inputs=None, name=None, **kwargs):
     def __init__(self, num_units=1, name="Input Layer", **kwargs):
 
-        self.name=name
+        self.name = name
 
         self.num_units = num_units
 

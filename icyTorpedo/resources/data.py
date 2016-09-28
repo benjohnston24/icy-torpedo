@@ -8,7 +8,6 @@ import pandas
 from sklearn.cross_validation import train_test_split
 import time
 import numpy as np
-import shutil
 import gzip
 
 __author__ = 'Ben Johnston'
@@ -25,6 +24,7 @@ MNIST_TEST_IMAGES = os.path.join(RESOURCE_DIR, 't10k-images-idx3-ubyte.gz')
 MNIST_TEST_LABELS = os.path.join(RESOURCE_DIR, 't10k-labels-idx1-ubyte.gz')
 MNIST_IMAGE_SIZE = 28 ** 2
 MNIST_NUMBER_LABELS = 10
+
 
 def load_training_data(filename=DEFAULT_TRAIN_SET):
     """Load the training set
@@ -46,6 +46,7 @@ def load_training_data(filename=DEFAULT_TRAIN_SET):
 
 def remove_incomplete_data(data):
     return data.dropna()
+
 
 def extract_image_landmarks(data_in):
 
@@ -110,17 +111,19 @@ def load_data(filename=DEFAULT_TRAIN_SET, dropna=True, split_ratio=0.7):
     x, y = extract_image_landmarks(data)
     return split_training_data(x, y, split_ratio=split_ratio)
 
+
 def _read(bytestream):
     dt = np.dtype(np.uint32).newbyteorder('>')
     return np.frombuffer(bytestream.read(4), dtype=dt)[0]
+
 
 def load_mnist_train_images():
     """Load the MNIST training set images
 
     Parameters
     ------------
-    
-    None 
+
+    None
 
     Returns
     ------------
@@ -129,17 +132,18 @@ def load_mnist_train_images():
     """
     return load_mnist_images(MNIST_TRAIN_IMAGES)
 
+
 def load_mnist_train_labels():
-    """Load the MNIST training set labels 
+    """Load the MNIST training set labels
 
     Parameters
     ------------
-    
-    None 
+
+    None
 
     Returns
     ------------
-    The MNIST training set labels using one hot encoding  as a numpy array with shape (number of images, 10) 
+    The MNIST training set labels using one hot encoding  as a numpy array with shape (number of images, 10)
 
     """
     return load_mnist_labels(MNIST_TRAIN_LABELS)
@@ -150,8 +154,8 @@ def load_mnist_test_images():
 
     Parameters
     ------------
-    
-    None 
+
+    None
 
     Returns
     ------------
@@ -160,21 +164,21 @@ def load_mnist_test_images():
     """
     return load_mnist_images(MNIST_TEST_IMAGES)
 
+
 def load_mnist_test_labels():
-    """Load the MNIST test set labels 
+    """Load the MNIST test set labels
 
     Parameters
     ------------
-    
-    None 
+
+    None
 
     Returns
     ------------
-    The MNIST test set labels using one hot encoding  as a numpy array with shape (number of images, 10) 
+    The MNIST test set labels using one hot encoding  as a numpy array with shape (number of images, 10)
 
     """
     return load_mnist_labels(MNIST_TEST_LABELS)
-
 
 
 def load_mnist_images(filename=MNIST_TRAIN_IMAGES):
@@ -184,13 +188,13 @@ def load_mnist_images(filename=MNIST_TRAIN_IMAGES):
 
     Parameters
     ------------
-    
+
     filename : (optional) the filename of the data set to load, default set to nnet.resources.MNIST_TRAIN_IMAGES
 
     Returns
     ------------
     The images as a numpy array with shape (number of images, rows, cols)
-    
+
     """
 
     with gzip.open(filename, 'rb') as bytestream:
@@ -216,22 +220,23 @@ def load_mnist_images(filename=MNIST_TRAIN_IMAGES):
         # Shift to be between -1 and 1
         # Subtract the mean data
         mu = np.mean(data)
-        data -= mu 
+        data -= mu
         return data
 
+
 def load_mnist_labels(filename=MNIST_TRAIN_LABELS):
-    """Load a set of MNIST labels 
+    """Load a set of MNIST labels
     This function extracts the MNIST labels contained within a gzip file.
 
     Parameters
     ------------
-    
+
     filename : (optional) the filename of the data set to load, default set to nnet.resources.MNIST_TRAIN_LABELS
 
     Returns
     ------------
-    The labels using one hot encoding as a numpy array with shape (number of samples, 10) 
-    
+    The labels using one hot encoding as a numpy array with shape (number of samples, 10)
+
     """
     with gzip.open(filename, 'rb') as bytestream:
         magic = _read(bytestream)
@@ -246,9 +251,8 @@ def load_mnist_labels(filename=MNIST_TRAIN_LABELS):
         buf = bytestream.read(num_labels)
         data = np.frombuffer(buf, dtype=np.uint8)
         # Return with one hot encoding
-        encoding = np.zeros((num_labels, MNIST_NUMBER_LABELS)) 
+        encoding = np.zeros((num_labels, MNIST_NUMBER_LABELS))
         for idx, label in enumerate(data):
             encoding[idx, label] = 1
         encoding = encoding.astype(np.float32)
-        return encoding 
-
+        return encoding

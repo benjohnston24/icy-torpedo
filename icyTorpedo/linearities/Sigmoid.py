@@ -25,12 +25,12 @@ class Sigmoid(baseLinearity):
     @classmethod
     def __call__(cls, z):
         """Compute the sigmoid function
-        
+
         g(z) =        1
                 ---------------
                           -z
                   1   +   e
-        
+
         """
 
         return 1.0 / (1.0 + np.exp(-z))

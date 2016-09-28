@@ -25,16 +25,16 @@ class Tanh(baseLinearity):
     @classmethod
     def __call__(cls, z):
         """Compute the linear function
-        
-        g(z) = tanh(z) 
+
+        g(z) = tanh(z)
         """
 
         return np.tanh(z)
 
     @classmethod
     def prime(cls, z):
-        """Compute the derivative of the linear 
+        """Compute the derivative of the linear
 
-        g'(z) = 1 
+        g'(z) = 1
         """
-        return 1 - (cls.__call__(z) ** 2  )
+        return 1 - (cls.__call__(z) ** 2)
