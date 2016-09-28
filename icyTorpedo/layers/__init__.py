@@ -1,5 +1,6 @@
 from .baseLayer import (
         iterlayers,
+        addbiasunits
         )
 
 from .InputLayer import (

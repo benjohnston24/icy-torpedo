@@ -3,7 +3,7 @@
 # S.D.G
 
 # Imports
-from icyTorpedo.layers import iterlayers
+from icyTorpedo.layers import iterlayers, addbiasunits
 from icyTorpedo.costfunctions import SquaredError
 from icyTorpedo.learningrates import FixedRate
 from icyTorpedo.linearities import Linear
@@ -127,10 +127,7 @@ class baseNetwork(object):
         delta = delta_o
 
         # Add the bias units of the previous layer
-        input_layer = self.output_layer.input_layer
-        inputs = np.hstack((
-            np.ones((input_layer.a.shape[0], 1)),
-            input_layer.a))
+        inputs = addbiasunits(self.output_layer.input_layer.a)
 
         self.output_layer.dc_dw = np.dot(inputs.T, delta_o) 
 
@@ -147,10 +144,9 @@ class baseNetwork(object):
                     layer.linearity.prime(layer.h).T
 
             layer.delta = delta
+
             # Add the bias units to the input
-            inputs = np.hstack((
-                np.ones((layer_before.a.shape[0], 1)),
-                layer_before.a))
+            inputs = addbiasunits(layer_before.a)
 
             layer.dc_dw = np.dot(delta, inputs).T 
 
@@ -242,13 +238,14 @@ class baseNetwork(object):
 
             # Implement training
             # Shuffle the data
-            #x_train_shuff, y_train_shuff = shuffle(self.x_train,
-            #                                       self.y_train,
-            #                                       random_state=int(time.time()))
+            x_train_shuff, y_train_shuff = shuffle(self.x_train,
+                                                   self.y_train,
+                                                   random_state=int(time.time()))
 
-            x_train_shuff, y_train_shuff = self.x_train, self.y_train
+            # x_train_shuff, y_train_shuff = self.x_train, self.y_train
             self.input_layer.set_inputs(x_train_shuff)
             self.forwardprop(targets=y_train_shuff)
+
             # Run backprop
             # Reload the training set for updating the weights
             self.backprop(y_train_shuff)

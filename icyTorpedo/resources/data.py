@@ -214,8 +214,9 @@ def load_mnist_images(filename=MNIST_TRAIN_IMAGES):
         data /= 255
 
         # Shift to be between -1 and 1
-        data -= 0.5
-        data /= 0.5
+        # Subtract the mean data
+        mu = np.mean(data)
+        data -= mu 
         return data
 
 def load_mnist_labels(filename=MNIST_TRAIN_LABELS):
@@ -229,7 +230,7 @@ def load_mnist_labels(filename=MNIST_TRAIN_LABELS):
 
     Returns
     ------------
-    The labels using one hot encoding  as a numpy array with shape (number of samples, 10) 
+    The labels using one hot encoding as a numpy array with shape (number of samples, 10) 
     
     """
     with gzip.open(filename, 'rb') as bytestream:

@@ -25,8 +25,8 @@ class TestRunMnist(unittest.TestCase):
 
         self.assertEqual(args.desc, '')
         self.assertEqual(args.name, 'mnist')
-        self.assertEqual(args.nodes, 700)
-        self.assertEqual(args.epochs, 1000)
+        self.assertEqual(args.nodes, 784)
+        self.assertEqual(args.epochs, 100)
 
     def test_options_specifics(self):
 

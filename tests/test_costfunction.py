@@ -4,7 +4,7 @@
 
 # Imports
 import unittest
-from icyTorpedo.costfunctions import SquaredError 
+from icyTorpedo.costfunctions import SquaredError
 from icyTorpedo.costfunctions.baseCostFunction import baseCostFunction
 import numpy as np
 
@@ -37,7 +37,6 @@ class TestSquaredError(unittest.TestCase):
         c = SquaredError()
 
         self.assertEqual(c(np.array([[4]]), np.array([[2]])), 2)
-
 
     def test_squared_error_2(self):
 

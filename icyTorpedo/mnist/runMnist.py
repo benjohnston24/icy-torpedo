@@ -12,7 +12,7 @@ from icyTorpedo.resources import load_mnist_train_images, \
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.learningrates import FixedRate
-from icyTorpedo.linearities import Linear
+from icyTorpedo.linearities import Linear, Tanh
 import numpy as np
 
 
@@ -28,12 +28,15 @@ def _options(*args, **kwargs):
                         help="Description")
     parser.add_argument('-s', '--savename', type=str, dest='name', default='mnist',
                         help="Assign a name to the execution")
-    parser.add_argument('-n', '--nodes', type=int, default=700, dest='nodes',
+    parser.add_argument('-n', '--nodes', type=int, default=784, dest='nodes',
                         help='Number of nodes for each hidden network')
-    parser.add_argument('-m', '--max_epochs', type=int, default=1000, dest='epochs',
+    parser.add_argument('-m', '--max_epochs', type=int, default=100, dest='epochs',
                         help='Maximum number of epochs')
     parser.add_argument('-l', '--learn_rate', type=float, default=0.0001, dest='learn',
                         help='Learning rate')
+    parser.add_argument('-p', '--patience', type=int, default=100, dest='patience',
+                        help='Number of epochs after finding the best validation error to stop training')
+
 
     args = parser.parse_args()
     return args
@@ -53,10 +56,11 @@ def _main(*args, **kwargs):
     l_input = InputLayer(num_units=28 ** 2, name="Input")
     l_hidden = DenseLayer(input_layer=l_input,
                           num_units=args.nodes,
+                          linearity=Tanh(),
                           name="Hidden")
     l_output = DenseLayer(input_layer=l_hidden,
                           num_units=10,
-                          linearity=Linear,
+                          linearity=Linear(),
                           name="Output")
 
     net = baseNetwork(
@@ -65,6 +69,7 @@ def _main(*args, **kwargs):
             valid_data=(x_valid, y_valid),
             eta=FixedRate(args.learn),
             max_epochs=args.epochs,
+            patience=args.patience,
             name=args.name,
             verbose=True,
             log_data=True,

@@ -39,7 +39,10 @@ def iterlayers(output_layer):
     ------------
 
     output_layer :  The final layer of the network
-    
+
+    Returns
+    ------------
+    A generator if layers in the list
     
     """
 
@@ -55,3 +58,25 @@ def iterlayers(output_layer):
 
     for layer in layers:
         yield layer
+
+
+def addbiasunits(input_activations):
+    """Add bias units to a numpy array of activations
+
+    Parameters
+    ------------
+
+    input_activations : A numpy array containing the activations to add a bias unit to
+
+    Returns
+    ------------
+    A numpy array containing the input_activations with the bias unit added
+    """
+
+    # Add the bias units of the previous layer
+    return np.hstack((
+        np.ones((input_activations.shape[0], 1)),
+        input_activations))
+
+
+

@@ -4,7 +4,6 @@
 
 # Imports
 import unittest
-from icyTorpedo.layers.baseLayer import baseLayer
 from icyTorpedo.layers import InputLayer, DenseLayer, iterlayers
 from icyTorpedo.linearities import Sigmoid
 import numpy as np
@@ -27,7 +26,7 @@ class TestInputLayer(unittest.TestCase):
     def test_input_shape(self):
 
         l_in = InputLayer(num_units=2)
-        test_data = np.zeros((3,2))
+        test_data = np.zeros((3, 2))
         l_in.set_inputs(test_data)
 
         self.assertEqual(l_in.a.shape, (3, 2))
@@ -38,14 +37,13 @@ class TestInputLayer(unittest.TestCase):
         l_in = InputLayer(name="Input", num_units=2)
 
         self.assertEqual(str(l_in),
-            'Input: 2')
+                         'Input: 2')
 
 
 class TestDenseLayer(unittest.TestCase):
 
     def setUp(self):
 
-        test_data = np.ones((5,2))
         self.l_in = InputLayer(num_units=2)
 
     def test_incoming_layer(self):
@@ -62,22 +60,20 @@ class TestDenseLayer(unittest.TestCase):
 
     def test_weights_shape(self):
 
-        l_in = InputLayer(num_units=2)
         l_hidden = DenseLayer(input_layer=self.l_in, num_units=2)
         l_hidden.initialise_weights()
 
         # Add 1 for baises
-        self.assertEqual(l_hidden.W.shape, (3,2))
+        self.assertEqual(l_hidden.W.shape, (3, 2))
 
     def test_weights_values(self):
 
         l_in = InputLayer(num_units=100)
-        l_hidden = DenseLayer(input_layer=self.l_in, num_units=700)
+        l_hidden = DenseLayer(input_layer=l_in, num_units=700)
         l_hidden.initialise_weights()
 
         self.assertTrue(np.max(l_hidden.W) <= 0.05)  # 0.5 is not a HARD rule
         self.assertTrue(np.min(l_hidden.W) >= -0.05)
-
 
     @unittest.skip("Biases now included in weights matrix")
     def test_bias_units_shape(self):
@@ -87,11 +83,11 @@ class TestDenseLayer(unittest.TestCase):
         self.assertEqual(l_hidden.b.shape, (1, 10))
 
     def test_activation(self):
-        """Test the correct computation of activations using a simple perceptron with known weights"""
+        """Test the correct computation of activations using a
+        simple perceptron with known weights"""
 
         l_in = InputLayer(num_units=2)
-        l_in.set_inputs(np.array([[0,1]]))
-        s = Sigmoid()
+        l_in.set_inputs(np.array([[0, 1]]))
 
         l_output = DenseLayer(input_layer=l_in, num_units=2)
 
@@ -101,24 +97,26 @@ class TestDenseLayer(unittest.TestCase):
             [0.3, 0.4],
             ])
 
-        # h = [[0.5 * 1 + 0.1 * 0 + 0.3 * 1, 0.5 * 1 + 0.2 * 0 + 0.4 * 1]] 
-        np.testing.assert_almost_equal(l_output.h_x(), 
-                np.array([[0.8, 0.9]]),
-                decimal=1,
-                )
+        # h = [[0.5 * 1 + 0.1 * 0 + 0.3 * 1, 0.5 * 1 + 0.2 * 0 + 0.4 * 1]]
+        np.testing.assert_almost_equal(l_output.h_x(),
+                                       np.array([[0.8, 0.9]]),
+                                       decimal=1,
+                                       )
         # a = s(h)
-        np.testing.assert_almost_equal(l_output.a_h(), 
-                np.array([[0.69, 0.71]]),
-                decimal=1,
-                )
+        np.testing.assert_almost_equal(l_output.a_h(),
+                                       np.array([[0.69, 0.71]]),
+                                       decimal=1,
+                                       )
 
     def test_cast_to_string(self):
 
         l_in = InputLayer(num_units=2)
-        l_output = DenseLayer(name="Hidden Layer", input_layer=l_in, num_units=1)
+        l_output = DenseLayer(name="Hidden Layer",
+                              input_layer=l_in,
+                              num_units=1)
 
         self.assertEqual(str(l_output),
-            "Hidden Layer: 1 [linearity: Sigmoid]")
+                         "Hidden Layer: 1 [linearity: Sigmoid]")
 
 
 class TestNetworkLayerOrder(unittest.TestCase):

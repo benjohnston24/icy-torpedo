@@ -5,7 +5,7 @@
 # Imports
 
 from setuptools import setup, find_packages
-from icyTorpedo.__init__ import __version__ 
+from icyTorpedo.__init__ import __version__
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -25,8 +25,8 @@ setup(
             'basicmnist=icyTorpedo.mnist:_main',
             ],
         },
-    #package_data={
-        # '': ['*.pkl'],
+    # package_data={
+    #    '': ['*.pkl'],
     #    },
     # license=open('LICENSE.txt').read(),
     # long_description=open('README.txt').read(),

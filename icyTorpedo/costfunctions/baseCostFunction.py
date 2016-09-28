@@ -18,11 +18,11 @@ class baseCostFunction(object):
 
     def __call__(self):
         """Override this method with the evaluation of the cost function"""
-        pass  # pragma: no cover 
+        pass  # pragma: no cover
 
     def prime(self):
         """Override this method with the derviative of the cost function"""
-        pass  # pragma: no cover 
+        pass  # pragma: no cover
 
     def __str__(self):
 

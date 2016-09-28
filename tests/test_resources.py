@@ -9,14 +9,13 @@ Test the resources module of the package
 # Imports
 
 import unittest
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open
 import icyTorpedo.resources as resources
 from icyTorpedo.resources import load_mnist_test_images, load_mnist_test_labels, \
         load_mnist_train_images, load_mnist_train_labels
 import os
 import pandas
 import numpy as np
-from collections import OrderedDict
 import random
 
 __author__ = 'Ben Johnston'
@@ -26,6 +25,7 @@ __license__ = 'MPL v2.0'
 
 mock_file_open = mock_open()
 
+
 def assert_data_division(utest_obj, x_train, y_train, x_valid, y_valid, split_ratio, split_ratio_calculated):
     # Check equal lengths
     utest_obj.assertEqual(len(x_train), len(y_train), 'x and y train dataset lengths not equal: %d != %d' %
@@ -34,7 +34,7 @@ def assert_data_division(utest_obj, x_train, y_train, x_valid, y_valid, split_ra
                           (len(x_valid), len(y_valid)))
     # Check the correct ratios
     utest_obj.assertEqual(split_ratio_calculated, split_ratio,
-                         'incorrect split ratio: %0.2f' % split_ratio_calculated)
+                          'incorrect split ratio: %0.2f' % split_ratio_calculated)
 
 
 class TestResources(unittest.TestCase):
@@ -89,7 +89,7 @@ class TestResources(unittest.TestCase):
         """Test load_data tries to load from a different file, when not present and exception is raised"""
 
         with self.assertRaises(OSError):
-            train_data = resources.load_data("new_training_set.csv")
+            resources.load_data("new_training_set.csv")
 
     def test_remove_incomplete(self):
         """Remove incomplete data"""
@@ -145,7 +145,6 @@ class TestResources(unittest.TestCase):
         x, y = resources.extract_image_landmarks(train_data)
         np.testing.assert_approx_equal(y[0, 4], np.float32((5 - 48) / 48))
 
-
     def test_splitting_training_data(self):
         """Test default train / valid set split"""
         train_data = pandas.DataFrame({
@@ -155,7 +154,7 @@ class TestResources(unittest.TestCase):
             'right_eye_center_x': pandas.Series(random.sample(range(1000), 10)),
             'right_eye_center_y': pandas.Series(random.sample(range(1000), 10)),
             'Image': pandas.Series([
-               "".join(["%s " % str(x) for x in random.sample(range(255), 4)]).strip() 
+               "".join(["%s " % str(x) for x in random.sample(range(255), 4)]).strip()
                for i in range(10)
                 ]),
         })
@@ -199,12 +198,13 @@ class TestMNISTData(unittest.TestCase):
                          "Each test set image should be 28 x 28 pixels")
         self.assertEqual(images.shape[2], 28,
                          "Each test set image should be 28 x 28 pixels")
-        self.assertTrue(np.amax(images) == 1,
-                         "Image values must be less than 1")
-        self.assertTrue(np.amin(images) == -1,
-                         "Image values must be less than 0")
-
-
+        self.assertTrue(np.amax(images) <= 1,
+                        "Image values must be less than 1")
+        self.assertTrue(np.amin(images) >= -1,
+                        "Image values must be less than 0")
+        np.testing.assert_almost_equal(np.mean(images), 0,
+                                       decimal=5,
+                                       err_msg="Mean not equal to 0")
 
     def test_load_mnist_test_labels(self):
         """Test the MNIST test set labels load correctly"""
@@ -242,10 +242,13 @@ class TestMNISTData(unittest.TestCase):
                          "Each test set image should be 28 x 28 pixels")
         self.assertEqual(images.shape[2], 28,
                          "Each test set image should be 28 x 28 pixels")
-        self.assertTrue(np.max(images) == 1,
-                         "Image values must be less than 1")
-        self.assertTrue(np.min(images) == -1,
-                         "Image values must be less than 0")
+        self.assertTrue(np.max(images) <= 1,
+                        "Image values must be less than 1")
+        self.assertTrue(np.min(images) >= -1,
+                        "Image values must be less than 0")
+        np.testing.assert_almost_equal(np.mean(images), 0,
+                                       decimal=5,
+                                       err_msg="Mean not equal to 0")
 
     def test_load_mnist_training_labels(self):
         """Test the MNIST test set labels load correctly"""
@@ -269,5 +272,3 @@ class TestMNISTData(unittest.TestCase):
                                 "First sample incorrectly labelled")
         np.testing.assert_equal(labels[-1], last_label,
                                 "First sample incorrectly labelled")
-
-

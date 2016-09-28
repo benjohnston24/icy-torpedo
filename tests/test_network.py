@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import MagicMock, patch, mock_open
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.layers import InputLayer, DenseLayer
-from icyTorpedo.linearities import Sigmoid, Linear
+from icyTorpedo.linearities import Sigmoid
 import numpy as np
 from io import StringIO
 
@@ -35,8 +35,8 @@ class TestNetwork(unittest.TestCase):
         # Define the architecture of the network
         self.l_in = InputLayer(num_units=2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
-        self.output_layer = DenseLayer(input_layer=self.l_hidden, 
-                                       num_units=1, 
+        self.output_layer = DenseLayer(input_layer=self.l_hidden,
+                                       num_units=1,
                                        name="Output")
 
         # Set the initial input values
@@ -54,22 +54,21 @@ class TestNetwork(unittest.TestCase):
             [0.01],
             [0.02]])
 
-        # Target output of network 
-        self.target_output = np.array([[1]]) 
+        # Target output of network
+        self.target_output = np.array([[1]])
 
         self.net = baseNetwork(
-                network_layers = [self.l_in, self.l_hidden, self.output_layer],
+                network_layers=[self.l_in, self.l_hidden, self.output_layer],
                 targets=self.target_output,
                 name='baseNetwork',
                 log_data=False,
                 verbose=False,
                 )
 
-        # Expected output after forward propr 1.026 
+        # Expected output after forward propr 1.02
         self.expected_output_h = np.array([[0.051118]])
         self.expected_output_a = np.array([[0.51278]])
 
- 
     def test_correct_input_output_layers(self):
 
         self.assertEqual(self.net.output_layer, self.output_layer)
@@ -89,12 +88,12 @@ class TestNetwork(unittest.TestCase):
 
         # Check output layer
         np.testing.assert_almost_equal(
-                self.net.output_layer.h, 
+                self.net.output_layer.h,
                 self.expected_output_h,
                 decimal=3,
                 )
         np.testing.assert_almost_equal(
-                self.net.output_layer.a, 
+                self.net.output_layer.a,
                 self.expected_output_a,
                 decimal=3,
                 )
@@ -112,8 +111,7 @@ class TestNetwork(unittest.TestCase):
         # delta_o = (a_o - t) * a_o * (1 - a_o)
         np.testing.assert_approx_equal(self.net.output_layer.delta, np.array([-0.1217]),
                                        significant=2)
- 
-        np.testing.assert_almost_equal(self.net.output_layer.dc_dw, 
+        np.testing.assert_almost_equal(self.net.output_layer.dc_dw,
                                        np.array([
                                            [-0.1217],
                                            [-0.08397],
@@ -124,15 +122,15 @@ class TestNetwork(unittest.TestCase):
 
         # Check hidden layer
         np.testing.assert_almost_equal(self.l_hidden.delta,
-                                       np.array([[-0.00026038], 
+                                       np.array([[-0.00026038],
                                                  [-0.0005003]]),
                                        decimal=4,
                                        )
         np.testing.assert_almost_equal(self.l_hidden.dc_dw,
                                        np.array([
-                                           [-0.00026038, -0.0005003], 
-                                           [0,0],
-                                           [-0.00026038, -0.0005003], 
+                                           [-0.00026038, -0.0005003],
+                                           [0, 0],
+                                           [-0.00026038, -0.0005003],
                                            ]),
                                        decimal=4,
                                        )
@@ -159,9 +157,9 @@ class TestNetwork(unittest.TestCase):
 
         np.testing.assert_almost_equal(self.l_hidden.W,
                                        np.array([
-                                           [0.5, 0.5], 
-                                           [0.1, 0.2], 
-                                           [0.3, 0.4], 
+                                           [0.5, 0.5],
+                                           [0.1, 0.2],
+                                           [0.3, 0.4],
                                            ]),
                                        decimal=3,
                                        )
@@ -177,9 +175,9 @@ class TestNetwork(unittest.TestCase):
 
         self.reset()
 
-        self.assertEqual(self.net.log_filename, "baseNetwork.log.0", 
+        self.assertEqual(self.net.log_filename, "baseNetwork.log.0",
                          "incorrect log filename")
-        self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.0", 
+        self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.0",
                          "incorrect pickle filename")
 
     @patch('os.path.exists', log_file_mock_two_files)
@@ -187,9 +185,9 @@ class TestNetwork(unittest.TestCase):
         """Check the log filenames are correctly established - two logs of the same name already exist"""
 
         self.reset()
-        self.assertEqual(self.net.log_filename, "baseNetwork.log.1", 
+        self.assertEqual(self.net.log_filename, "baseNetwork.log.1",
                          "incorrect log filename")
-        self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.1", 
+        self.assertEqual(self.net.save_params_filename, "baseNetwork.pkl.1",
                          "incorrect pickle filename")
 
     def test_log_corrects_data(self):
@@ -220,18 +218,18 @@ class TestNetwork(unittest.TestCase):
         self.net.y_valid = np.zeros((78, 10))
 
         expected_output = "Neural Network: baseNetwork\n"\
-                "Architecture:\nInput\nHidden\nOutput\n"\
-                "Regression: False\n"\
-                "Cost Function: SquaredError\n"\
-                "Learning Rate: FixedRate: 1.000000E-03\n"\
-                "x_train shape: (128, 784)\ty_train shape: (128, 10)\n"\
-                "x_valid shape: (78, 784)\ty_valid shape: (78, 10)\n"\
-                "Max Epochs: 2000\n"\
-                "Patience: 100\n"
+                          "Architecture:\nInput\nHidden\nOutput\n"\
+                          "Regression: False\n"\
+                          "Cost Function: SquaredError\n"\
+                          "Learning Rate: FixedRate: 1.000000E-03\n"\
+                          "x_train shape: (128, 784)\ty_train shape: (128, 10)\n"\
+                          "x_valid shape: (78, 784)\ty_valid shape: (78, 10)\n"\
+                          "Max Epochs: 2000\n"\
+                          "Patience: 100\n"
 
         self.assertEqual(str(self.net), expected_output)
 
-    @patch('sys.stdout', new_callable=StringIO) 
+    @patch('sys.stdout', new_callable=StringIO)
     def test_verbose(self, mock_stdout):
 
         self.reset()
@@ -242,13 +240,12 @@ class TestNetwork(unittest.TestCase):
 
         self.assertEqual("mock stdout\n", mock_stdout.getvalue())
 
-
     def test_prepare_train_header(self):
 
         header = self.net._prepare_train_header()
 
         expected_result = \
-                "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+            "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
                  "Epoch",
                  "Train Error",
                  "Valid Error",
@@ -272,19 +269,14 @@ class TestMultipleSamples(unittest.TestCase):
         # Define the architecture of the network
         self.l_in = InputLayer(num_units=2, name="Input")
         self.l_hidden = DenseLayer(input_layer=self.l_in, num_units=2, name="Hidden")
-        self.output_layer = DenseLayer(input_layer=self.l_hidden, 
-                                       num_units=1, 
+        self.output_layer = DenseLayer(input_layer=self.l_hidden,
+                                       num_units=1,
                                        name="Output")
 
         # Set the initial input values
         x_test = np.array([
             [1, 0],
             [0, 1],
-            ])
-
-        y_test = np.array([
-            [1],
-            [1],
             ])
 
         self.l_in.set_inputs(np.array(x_test))
