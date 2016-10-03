@@ -13,8 +13,8 @@ from sklearn.utils import shuffle
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.1'
-__date__ = 'Friday 16 September  20:55:50 AEST 2016'
+__revision__ = '0.2'
+__date__ = 'Monday 3 October  21:56:42 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 
@@ -270,6 +270,9 @@ class baseNetwork(object):
                 improvement = "*"
                 min_valid_err = valid_err
                 best_epoch = epoch
+
+                # Cache the best weights
+                self.cache_best_weights()
                 # self.eta.value *= 1.05  # TODO implement this in a more generic way
 
             else:
@@ -306,6 +309,23 @@ class baseNetwork(object):
             return train_err, valid_err, correct_class
         else:
             return train_err, valid_err, None
+
+    def cache_best_weights(self):
+        """Cache all the best weights for later storage / use
+
+        Parameters
+        -----------
+
+        None
+
+        Returns 
+        -----------
+        None
+        """
+
+        # Skip the input layer as no weights present
+        for layer in self.network_layers[1:]:
+            layer.best_W = np.copy(layer.W)
 
     def predict(self, inputs):
 

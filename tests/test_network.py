@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # S.D.G
 
+"""Test the network module"""
+
 # Imports
 import unittest
 from unittest.mock import MagicMock, patch, mock_open
@@ -13,8 +15,8 @@ from io import StringIO
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.1'
-__date__ = 'Thursday 15 September  10:44:02 AEST 2016'
+__revision__ = '0.2'
+__date__ = 'Monday 3 October  21:18:40 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 
