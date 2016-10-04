@@ -4,10 +4,6 @@
 
 """Base Linearity class"""
 
-# Imports
-import numpy as np
-
-
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
 __date__ = 'Wednesday 14 September  21:03:24 AEST 2016'

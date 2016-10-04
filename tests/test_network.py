@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # S.D.G
 
+"""Test the network module"""
+
 # Imports
 import unittest
 from unittest.mock import MagicMock, patch, mock_open
@@ -13,8 +15,8 @@ from io import StringIO
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.1'
-__date__ = 'Thursday 15 September  10:44:02 AEST 2016'
+__revision__ = '0.2'
+__date__ = 'Monday 3 October  21:18:40 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 
@@ -209,6 +211,7 @@ class TestNetwork(unittest.TestCase):
 
         self.net.network_layers = ["Input", "Hidden", "Output"]
         self.net.cost_function = "SquaredError"
+        self.net.max_epochs = 2000
         self.net.eta = 'FixedRate: 1.000000E-03'
 
         self.net.x_train = np.zeros((128, 28 ** 2))
@@ -257,6 +260,99 @@ class TestNetwork(unittest.TestCase):
                  )
 
         self.assertEqual(header, expected_result)
+
+    def test_caching_best_weights(self):
+        """Test the weights are correctly cached"""
+        self.reset()
+
+        self.net.cache_best_weights()
+
+        np.testing.assert_almost_equal(self.l_hidden.best_W, self.l_hidden.W)
+        np.testing.assert_almost_equal(self.output_layer.best_W, self.output_layer.W)
+
+    @patch('pickle.dump')
+    def test_save_network(self, mock_pickle):
+        "Test saving the weights are correct"
+
+        self.reset()
+
+        self.net.cache_best_weights()
+        # Configure some values
+        self.net.best_epoch = 2000
+        self.net.min_valid_err = 0.1234
+        layers = self.net.network_layers
+        train_err_hist = [1, 2, 3]
+        valid_err_hist = [4, 5, 6]
+        correct_class_hist = [7, 8, 9]
+
+        self.net.train_err_history = train_err_hist
+        self.net.valid_err_history = valid_err_hist
+        self.net.correct_class_history = correct_class_hist
+
+        mock_save = mock_open()
+
+        with patch('builtins.open', mock_save):
+            self.net.save_network()
+
+        mock_save.assert_called_once_with('baseNetwork.pkl', 'wb')
+        handle = mock_save()
+
+        expected_dict = {
+                'network_layers': layers,
+                'best_epoch': self.net.best_epoch,
+                'min_valid_err': self.net.min_valid_err,
+                'train_err_hist': train_err_hist,
+                'valid_err_hist': valid_err_hist,
+                'correct_class_hist': correct_class_hist,
+        }
+
+        mock_pickle.assert_called_with(expected_dict, handle)
+
+    @patch('pickle.load')
+    def test_load_network(self, mock_load_pickle):
+
+        self.reset()
+
+        self.net.cache_best_weights()
+
+        # Configure some values
+        best_epoch = 2000
+        min_valid_err = 0.1234
+        layers = self.net.network_layers
+        train_err_hist = [1, 2, 3]
+        valid_err_hist = [4, 5, 6]
+        correct_class_hist = [7, 8, 9]
+
+        self.net.train_err_history = []
+        self.net.valid_err_history = []
+        self.net.correct_class_history = []
+
+        expected_dict = {
+                'network_layers': layers,
+                'best_epoch': best_epoch,
+                'min_valid_err': min_valid_err,
+                'train_err_hist': train_err_hist,
+                'valid_err_hist': valid_err_hist,
+                'correct_class_hist': correct_class_hist,
+        }
+
+        mock_load_pickle.return_value = expected_dict
+
+        mock_load = mock_open()
+
+        with patch('builtins.open', mock_load):
+            self.net.load_network('baseNetwork.pkl')
+
+        mock_load.assert_called_once_with('baseNetwork.pkl', 'rb')
+        handle = mock_load()
+
+        mock_load_pickle.assert_called_with(handle)
+        self.assertEqual(self.net.network_layers, layers)
+        self.assertEqual(self.net.best_epoch, best_epoch)
+        self.assertEqual(self.net.min_valid_err, min_valid_err)
+        self.assertEqual(self.net.train_err_history, train_err_hist)
+        self.assertEqual(self.net.valid_err_history, valid_err_hist)
+        self.assertEqual(self.net.correct_class_history, correct_class_hist)
 
 
 class TestMultipleSamples(unittest.TestCase):

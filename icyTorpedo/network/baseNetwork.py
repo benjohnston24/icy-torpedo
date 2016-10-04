@@ -10,11 +10,12 @@ import numpy as np
 import os
 import time
 from sklearn.utils import shuffle
+from six.moves import cPickle as pickle
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.1'
-__date__ = 'Friday 16 September  20:55:50 AEST 2016'
+__revision__ = '0.2'
+__date__ = 'Monday 3 October  21:56:42 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 
@@ -32,7 +33,7 @@ class baseNetwork(object):
                  test_data=(None, None),
                  eta=FixedRate(0.01),
                  costfunction=SquaredError,
-                 max_epochs=2000,
+                 max_epochs=np.inf,
                  patience=100,
                  regression=False,
                  name='neuralNet',
@@ -64,6 +65,10 @@ class baseNetwork(object):
         self.log_data = log_data
         self.name = name
 
+        # Initialise some variables to be used during training
+        self.min_valid_err = np.inf
+        self.best_epoch = 0
+
         # Reserve some variables for storing training data
         self.x_train, self.y_train = train_data
         self.x_valid, self.y_valid = valid_data
@@ -90,7 +95,7 @@ class baseNetwork(object):
                   (self.x_train.shape, self.y_train.shape)
         output += "x_valid shape: %s\ty_valid shape: %s\n" % \
                   (self.x_valid.shape, self.y_valid.shape)
-        output += "Max Epochs: %d\n" % self.max_epochs
+        output += "Max Epochs: %.0f\n" % self.max_epochs
         output += "Patience: %d\n" % self.patience
 
         return output
@@ -209,8 +214,13 @@ class baseNetwork(object):
         Simple version, apply each of the training examples in the same order per iteration
         """
 
-        min_valid_err = np.inf
-        best_epoch = 0
+        self.min_valid_err = np.inf
+        self.best_epoch = 0
+        epoch = 0
+
+        self.train_err_history = []
+        self.valid_err_history = []
+        self.correct_class_history = []
 
         if not self.regression:
             self.log(LINE + "-" * 20)
@@ -224,7 +234,7 @@ class baseNetwork(object):
         else:
             self.log(LINE)
 
-        for epoch in range(self.max_epochs):
+        while True:
 
             # Time the iteration
             start_time = time.time()
@@ -252,30 +262,32 @@ class baseNetwork(object):
 
             train_err = self.cost_function(output=train_pred,
                                            target=y_train_shuff)
+            self.train_err_history.append(train_err)
 
             # Check against validation set
             valid_pred = self.predict(self.x_valid)
 
             valid_err = self.cost_function(output=valid_pred,
                                            target=self.y_valid)
+            self.valid_err_history.append(valid_err)
 
             # If this is a categorisation problem determine if correctly labeled
             if not self.regression:
                 correct_class = np.sum(valid_pred.argmax(axis=1) == self.y_valid.argmax(axis=1))
+                self.correct_class_history.append(correct_class)
 
             # End of the iteration
             finish_time = time.time()
 
-            if (valid_err < min_valid_err):
+            if (valid_err < self.min_valid_err):
                 improvement = "*"
-                min_valid_err = valid_err
-                best_epoch = epoch
-                # self.eta.value *= 1.05  # TODO implement this in a more generic way
+                self.min_valid_err = valid_err
+                self.best_epoch = epoch
+
+                # Cache the best weights
+                self.cache_best_weights()
 
             else:
-                # self.eta.value *= 0.95
-                # if self.eta.value < 0.000001:
-                #     self.eta.value = 0.000001
                 improvement = ""
 
             iteration_record = \
@@ -295,17 +307,41 @@ class baseNetwork(object):
             self.log(iteration_record)
 
             # Check for early termination
-            if (epoch - best_epoch) > self.patience:
+            if (epoch - self.best_epoch) > self.patience:
 
                 self.log("Early Stopping")
                 self.log("Best validation error %0.6f @ epoch %d" %
-                         (min_valid_err, best_epoch))
+                         (self.min_valid_err, self.best_epoch))
+                self.save_network()
                 break
+            elif epoch > self.max_epochs:
+                self.save_network()
+                break
+
+            # Increment the iteration counter
+            epoch += 1
 
         if not self.regression:
             return train_err, valid_err, correct_class
         else:
             return train_err, valid_err, None
+
+    def cache_best_weights(self):
+        """Cache all the best weights for later storage / use
+
+        Parameters
+        -----------
+
+        None
+
+        Returns
+        -----------
+        None
+        """
+
+        # Skip the input layer as no weights present
+        for layer in self.network_layers[1:]:
+            layer.best_W = np.copy(layer.W)
 
     def predict(self, inputs):
 
@@ -313,6 +349,33 @@ class baseNetwork(object):
         self.forwardprop()
 
         return self.output_layer.a
+
+    # Save the network
+    def save_network(self):
+        data_to_save = {
+            'network_layers': self.network_layers,
+            'best_epoch': self.best_epoch,
+            'min_valid_err': self.min_valid_err,
+            'train_err_hist': self.train_err_history,
+            'valid_err_hist': self.valid_err_history,
+            'correct_class_hist': self.correct_class_history,
+        }
+
+        with open(self.save_params_filename, 'wb') as f:
+            pickle.dump(data_to_save, f)
+
+    # Load the network
+    def load_network(self, filename):
+
+        with open(filename, 'rb') as f:
+            data = pickle.load(f)
+
+        self.network_layers = data['network_layers']
+        self.best_epoch = data['best_epoch']
+        self.min_valid_err = data['min_valid_err']
+        self.train_err_history = data['train_err_hist']
+        self.valid_err_history = data['valid_err_hist']
+        self.correct_class_history = data['correct_class_hist']
 
     # Logging functionality
     def _prepare_log(self):
