@@ -44,8 +44,9 @@ class TestRunMnist(unittest.TestCase):
         self.assertEqual(args.epochs, 12)
 
     @patch('icyTorpedo.network.baseNetwork.log')
+    @patch('icyTorpedo.network.baseNetwork.save_network')
     @patch('sys.stdout')
-    def test_main_runs(self, _, __):
+    def test_main_runs(self, _, __, ___):
         """Test the function successfully runs"""
 
         sys.argv[1:] = ['-n', '1',

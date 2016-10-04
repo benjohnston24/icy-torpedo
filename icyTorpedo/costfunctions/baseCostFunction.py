@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 # S.D.G
 
-# Imports
-import numpy as np
-
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
 __date__ = 'Wednesday 14 September  21:36:48 AEST 2016'

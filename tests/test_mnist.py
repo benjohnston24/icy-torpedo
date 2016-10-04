@@ -4,6 +4,7 @@
 
 # Imports
 import unittest
+from unittest.mock import patch
 from icyTorpedo.resources import load_mnist_train_images, \
         load_mnist_train_labels
 from icyTorpedo.layers import InputLayer, DenseLayer
@@ -46,7 +47,9 @@ class TestMnistSingleSample(unittest.TestCase):
         self.net.x_valid = self.net.x_train
         self.net.y_valid = self.net.y_train
 
-    def test_memorise_single_sample(self):
+    @patch('icyTorpedo.network.baseNetwork.log')
+    @patch('icyTorpedo.network.baseNetwork.save_network')
+    def test_memorise_single_sample(self, _, __):
 
         train_err, valid_err, correct_class = self.net.train()
 
@@ -98,7 +101,9 @@ class TestMnistDoubleSample(unittest.TestCase):
                 verbose=False,
                 )
 
-    def test_can_execute_two_samples(self):
+    @patch('icyTorpedo.network.baseNetwork.log')
+    @patch('icyTorpedo.network.baseNetwork.save_network')
+    def test_can_execute_two_samples(self, _, __):
 
         train_err, valid_err, correct_class = self.net.train()
 
