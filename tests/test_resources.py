@@ -72,7 +72,7 @@ class TestResources(unittest.TestCase):
 
     def test_load_data(self):
         """Load the data set with landmarks extracted and training / validation sets split"""
-        train_data = resources.load_data()
+        train_data, offsets = resources.load_data()
         self.assertEqual(len(train_data), 4)
         self.assertEqual(train_data[0].shape[0], train_data[1].shape[0])
         self.assertEqual(train_data[2].shape[0], train_data[3].shape[0])
@@ -83,7 +83,7 @@ class TestResources(unittest.TestCase):
         """Test the loaded data has zero mean"""
         train_data = resources.load_training_data()
         train_data = resources.remove_incomplete_data(train_data)
-        x, y = resources.extract_image_landmarks(train_data)
+        x, y, _ = resources.extract_image_landmarks(train_data)
 
         np.testing.assert_almost_equal(np.mean(x), 0, decimal=4)
         np.testing.assert_almost_equal(np.mean(y), 0, decimal=4)
@@ -92,7 +92,7 @@ class TestResources(unittest.TestCase):
         """Test the max and min of the data"""
         train_data = resources.load_training_data()
         train_data = resources.remove_incomplete_data(train_data)
-        x, y = resources.extract_image_landmarks(train_data)
+        x, y, _ = resources.extract_image_landmarks(train_data)
 
         self.assertTrue(np.max(x) <= 1)
         self.assertTrue(np.min(x) >= -1)
@@ -101,7 +101,8 @@ class TestResources(unittest.TestCase):
 
     def test_load_data_different(self):
         """Test the loaded data is in fact different"""
-        x_train, y_train, x_valid, y_valid = resources.load_data()
+        data, offsets = resources.load_data()
+        x_train, y_train, x_valid, y_valid = data
         self.assertFalse(np.all(x_train == x_valid))
         self.assertFalse(np.all(y_train == y_valid))
 
@@ -124,7 +125,7 @@ class TestResources(unittest.TestCase):
     def test_image_landmark_extraction_shape(self):
         """Extract landmarks and images"""
         train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
+        x, y, _ = resources.extract_image_landmarks(train_data)
         self.assertEqual(len(x), len(y))
         self.assertEqual(x.shape[1], 4)
         self.assertEqual(y.shape[1], 5)
@@ -132,7 +133,7 @@ class TestResources(unittest.TestCase):
     def test_image_landmark_extraction_x(self):
         """Test image extraction of extract_image_landmarks"""
         train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
+        x, y, _ = resources.extract_image_landmarks(train_data)
         np.testing.assert_allclose(x[0], [0, 0, 0, 0])
 
     def test_splitting_training_data(self):
@@ -150,7 +151,7 @@ class TestResources(unittest.TestCase):
         })
 
         # Generate random images
-        x, y = resources.extract_image_landmarks(train_data)
+        x, y, _ = resources.extract_image_landmarks(train_data)
 
         for split_ratio in [0.5, 0.7]:
             x_train, y_train, x_valid, y_valid = \

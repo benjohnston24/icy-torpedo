@@ -58,10 +58,12 @@ def extract_image_landmarks(data_in):
     # Extract the images
     # Scale the images
     x = np.vstack(data_in['Image'].values)
-    x /= np.max(x)
+    x_max = np.max(x)
+    x /= x_max 
 
     # Centre to the mean
-    x -= np.mean(x)
+    x_mean = np.mean(x)
+    x -= x_mean 
 
     x = x.astype(np.float32)
 
@@ -70,12 +72,15 @@ def extract_image_landmarks(data_in):
     labels.pop(labels.index('Image'))
     y = data_in[labels].values
 
-    y = y / np.max(y)
-    y = y - np.mean(y)
+    y_max = np.max(y)
+    y = y / y_max 
+
+    y_mean = np.mean(y)
+    y = y - y_mean 
 
     y = y.astype(np.float32)
 
-    return x, y
+    return x, y, (x_max, x_mean, y_max, y_mean)
 
 
 def split_training_data(x, y, split_ratio=0.7):
@@ -103,14 +108,16 @@ def load_data(filename=DEFAULT_TRAIN_SET, dropna=True, split_ratio=0.7):
     Returns
     ------------
 
-    a list of np.arrays containing the training and validation sets
+    a list of np.arrays containing the training and validation sets 
     [train_in, train_targets, valid_in, valid_targets]
+    and the maximum and mean values of the input and target training data
+    (in_max, in_mean, target_max, target_mean)
     """
     data = load_training_data(filename)
     if dropna:
         data = remove_incomplete_data(data)
-    x, y = extract_image_landmarks(data)
-    return split_training_data(x, y, split_ratio=split_ratio)
+    x, y, offsets = extract_image_landmarks(data)
+    return split_training_data(x, y, split_ratio=split_ratio), offsets
 
 
 def _read(bytestream):

@@ -81,7 +81,7 @@ class TestNetwork(unittest.TestCase):
         self.reset()
 
         # Execute forward prop
-        self.net.forwardprop()
+        self.net.forwardprop(False)
 
         # Check the outputs are correct
         # Check hidden layer

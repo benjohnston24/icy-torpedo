@@ -19,8 +19,11 @@ class DenseLayer(baseLayer):
     Parameters
     -----------
 
-    inputs :  The input to this layer.  A layer inheriting from baseLayer
-        or a tuple of the shape of the layer
+    input_layer :  The input to this layer.  A layer inheriting from baseLayer
+                   or a tuple of the shape of the layer
+    linearity   :  The linearity function to be used for the nodes [default: Tanh]
+    dropout     :  The default dropout rate for the layer, 0 indicated no dropout
+                   0.5: 50% dropout, 1: 100% dropout [default: 0]
     name   :  A string of the name for the layer
 
 
@@ -33,6 +36,7 @@ class DenseLayer(baseLayer):
     def __init__(self,
                  num_units=1,
                  linearity=Sigmoid(),
+                 dropout=0,  # Default to 0 dropout
                  bias=1,
                  name="Dense Layer",
                  *args,
@@ -44,6 +48,8 @@ class DenseLayer(baseLayer):
                 **kwargs)
 
         self.linearity = linearity
+
+        self.dropout = dropout
 
         self.initialise_weights(bias)
 
@@ -114,16 +120,30 @@ class DenseLayer(baseLayer):
         self.h = np.dot(inputs, self.W)
         return self.h
 
-    def a_h(self, *args, **kwargs):
+    def a_h(self, enable_dropout=True, *args, **kwargs):
         """Compute the feedforward calculations for the layer
 
         a = linearity(h_x)
         """
         self.a = self.linearity(self.h_x(*args, **kwargs))
 
+        # Apply dropout if required
+        if enable_dropout and self.dropout > 0:
+            number_to_drop = int(np.floor(self.dropout * self.a.shape[1]))
+            units_to_drop = np.random.randint(0, self.a.shape[1], number_to_drop)
+
+            self.a[:,units_to_drop] = 0
+
         return self.a
 
     def __str__(self):
 
-        return "%s: %d [linearity: %s]" % \
-                (self.name, self.num_units, self.linearity.name)
+        return_str =  "%s: %d [linearity: %s" % \
+                      (self.name, self.num_units, self.linearity.name)
+        if self.dropout:
+            return_str += " dropout: %d%%" % (self.dropout * 100)
+        return_str += "]"
+
+        return return_str
+
+

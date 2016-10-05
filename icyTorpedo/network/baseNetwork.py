@@ -14,8 +14,8 @@ from six.moves import cPickle as pickle
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.2'
-__date__ = 'Monday 3 October  21:56:42 AEDT 2016'
+__revision__ = '0.3'
+__date__ = 'Wednesday 5 October  09:56:55 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 
@@ -41,20 +41,8 @@ class baseNetwork(object):
                  log_data=False,
                  *args, **kwargs):
 
-        # Get the architecture of the network
-        self.network_layers = network_layers
-
-        # Define the output layer as the last layer in the list
-        self.output_layer = self.network_layers[-1]
-
-        # Determine the input layer by traversing the inputs of the output layer
-        layer = self.output_layer
-
-        while layer.input_layer is not None:
-            layer = layer.input_layer
-
-        # Define the input layer as the first layer in the list
-        self.input_layer = layer
+        if network_layers is not None:
+            self._setup_layers(network_layers)
 
         # Define characteristics of the network
         self.cost_function = costfunction()
@@ -100,10 +88,10 @@ class baseNetwork(object):
 
         return output
 
-    def forwardprop(self, targets=None):
+    def forwardprop(self, targets=None, enable_dropout=True):
         """Iterate through each of the layers and compute the activations at each node"""
         for layer in iterlayers(self.output_layer):
-            layer.a_h(targets=targets)  # Compute the activations
+            layer.a_h(targets=targets, enable_dropout=enable_dropout)  # Compute the activations
 
     def backprop(self, targets):
         """Execute back propogation
@@ -346,7 +334,7 @@ class baseNetwork(object):
     def predict(self, inputs):
 
         self.input_layer.set_inputs(inputs)
-        self.forwardprop()
+        self.forwardprop(enable_dropout=False)
 
         return self.output_layer.a
 
@@ -370,12 +358,31 @@ class baseNetwork(object):
         with open(filename, 'rb') as f:
             data = pickle.load(f)
 
-        self.network_layers = data['network_layers']
+        self._setup_layers(data['network_layers'])
         self.best_epoch = data['best_epoch']
         self.min_valid_err = data['min_valid_err']
         self.train_err_history = data['train_err_hist']
         self.valid_err_history = data['valid_err_hist']
         self.correct_class_history = data['correct_class_hist']
+
+    def _setup_layers(self, network_layers):
+        """Setup the layers for use in the object"""
+
+        # Get the architecture of the network
+        self.network_layers = network_layers
+
+        # Define the output layer as the last layer in the list
+        self.output_layer = self.network_layers[-1]
+
+        # Determine the input layer by traversing the inputs of the output layer
+        layer = self.output_layer
+
+        while layer.input_layer is not None:
+            layer = layer.input_layer
+
+        # Define the input layer as the first layer in the list
+        self.input_layer = layer
+
 
     # Logging functionality
     def _prepare_log(self):

@@ -118,6 +118,33 @@ class TestDenseLayer(unittest.TestCase):
         self.assertEqual(str(l_output),
                          "Hidden Layer: 1 [linearity: Sigmoid]")
 
+    def test_dropout_activations(self):
+        l_in = InputLayer(num_units=2)
+        l_in.set_inputs(np.array([
+            [0, 1],
+            [1, 1],
+            [0, 1],
+            ]))
+
+        l_output = DenseLayer(input_layer=l_in, 
+                              num_units=2, 
+                              dropout=0.5)
+
+        l_output.a_h()
+        self.assertTrue(len(np.where(l_output.a == 0)[0]) == 3)
+
+
+    def test_dropout_string(self):
+
+        l_in = InputLayer(num_units=2)
+        l_output = DenseLayer(input_layer=l_in, 
+                              num_units=2, 
+                              dropout=0.5)
+
+        self.assertEqual(str(l_output),
+                         "Dense Layer: 2 [linearity: Sigmoid dropout: 50%]")
+                        
+
 
 class TestNetworkLayerOrder(unittest.TestCase):
 
