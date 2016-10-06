@@ -9,6 +9,9 @@ from sklearn.cross_validation import train_test_split
 import time
 import numpy as np
 import gzip
+import pandas as pd
+from random import shuffle
+from six.moves import cPickle as pickle
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -17,6 +20,7 @@ __license__ = 'MPL v2.0'
 
 
 RESOURCE_DIR = os.path.dirname(__file__)
+DATA_FOLDER = RESOURCE_DIR
 DEFAULT_TRAIN_SET = os.path.join(RESOURCE_DIR, 'training.csv')
 MNIST_TRAIN_IMAGES = os.path.join(RESOURCE_DIR, 'train-images-idx3-ubyte.gz')
 MNIST_TRAIN_LABELS = os.path.join(RESOURCE_DIR, 'train-labels-idx1-ubyte.gz')
@@ -24,7 +28,153 @@ MNIST_TEST_IMAGES = os.path.join(RESOURCE_DIR, 't10k-images-idx3-ubyte.gz')
 MNIST_TEST_LABELS = os.path.join(RESOURCE_DIR, 't10k-labels-idx1-ubyte.gz')
 MNIST_IMAGE_SIZE = 28 ** 2
 MNIST_NUMBER_LABELS = 10
+SPECIAL_LANDMARKS_NPY = "_specialised_landmarks.pkl"
 
+KAGGLE_LANDMARKS = (
+        ('left_eye_center_x', 'left_eye_center_y'),
+        ('right_eye_center_x', 'right_eye_center_y'),
+        ('left_eye_inner_corner_x', 'left_eye_inner_corner_y'),
+        ('left_eye_outer_corner_x', 'left_eye_outer_corner_y'),
+        ('right_eye_inner_corner_x', 'right_eye_inner_corner_y'),
+        ('right_eye_outer_corner_x', 'right_eye_outer_corner_y'),
+        ('left_eyebrow_inner_end_x', 'left_eyebrow_inner_end_y'),
+        ('left_eyebrow_outer_end_x', 'left_eyebrow_outer_end_y'),
+        ('right_eyebrow_inner_end_x', 'right_eyebrow_inner_end_y'),
+        ('right_eyebrow_outer_end_x', 'right_eyebrow_outer_end_y'),
+        ('nose_tip_x', 'nose_tip_y'),
+        ('mouth_left_corner_x', 'mouth_left_corner_y'),
+        ('mouth_right_corner_x', 'mouth_right_corner_y'),
+        ('mouth_center_top_lip_x', 'mouth_center_top_lip_y'),
+        ('mouth_center_bottom_lip_x', 'mouth_center_bottom_lip_y'),
+        )
+
+def generate_specialised_datasets():
+
+    # Load the data frame
+    df = pd.read_csv(DEFAULT_TRAIN_SET)
+    df['idx'] = pd.Series(range(len(df.Image)), index=df.index, dtype=np.int)
+
+    # Get the total number of valid landmarks of each type
+    number_valid_landmarks = []
+    for idx, cols in enumerate(KAGGLE_LANDMARKS):
+        d_col = df[cols[0]].dropna()
+        number_valid_landmarks.append(len(d_col))
+
+    # Create the common test set
+    train_test_ratio = 1  # 0.97
+    number_test_samples = int((1 - train_test_ratio) * len(df))
+
+    # Ensure all landmarks are present
+    df_test = df.dropna()
+
+    # Get the ids and shuffle
+    df_test_idx = df_test.idx.values
+    shuffle(df_test_idx)
+
+    test_idx = df_test_idx[:number_test_samples]
+    print("-" * 90)
+    print("Number of specialist samples")
+    print("Number of test samples: %d" % len(test_idx))
+    print("-" * 90)
+    print("{:<40}{:^10}{:^10}{:^10}{:^10}{:^10}".format(
+        "Feature", "Train", "Valid", "Test", "Sum", "#Avail"))
+    print("-" * 90)
+
+    # Remove the test data from the data frame
+    df = df[~df.idx.isin(test_idx)]
+
+    for idx, cols in enumerate(KAGGLE_LANDMARKS):
+        cols_with_idx = [col for col in cols]
+        cols_with_idx.append('idx')
+
+        data = df.loc[:,cols_with_idx]
+        data = data.dropna()
+
+        train_idx, valid_idx = train_test_split(data.idx.values, train_size=0.7)
+        print("{:<40}{:^10}{:^10}{:^10}{:^10}{:^10}".format(
+            cols[0], len(train_idx), len(valid_idx),
+            len(test_idx), len(train_idx) + len(valid_idx) + len(test_idx), 
+            number_valid_landmarks[idx],
+            ))
+
+        filename = "{}{}".format(idx, SPECIAL_LANDMARKS_NPY)
+        filename = os.path.join(DATA_FOLDER, filename)
+
+        with open(filename, 'wb') as f:
+            pickle.dump(
+                {
+                    'idx' : idx,
+                    'train_idx': train_idx,
+                    'valid_idx': valid_idx,
+                    'test_idx': test_idx,
+                },f)
+
+def load_prepared_indices(landmark=0):
+    """Load the pre split specialised training data indices
+
+    parameters
+    -----------
+
+    landmark :  The landmark number for the specialised data set
+
+    returns
+    -----------
+    A tuple of numpy arrays containing the (training_indices, validation_indices, test_indices) 
+    """
+    filename = os.path.join(DATA_FOLDER,
+                            "%d%s" % ( landmark, SPECIAL_LANDMARKS_NPY))
+
+    with open(filename, 'rb') as f:
+        data = pickle.load(f)
+
+    if int(data['idx']) != landmark:
+        raise ValueError("Landmark {} data was loaded, not landmark {}".format(
+            int(data['idx']),
+            landmark,
+            ))
+    return (data['train_idx'], data['valid_idx'], data['test_idx'])
+
+def load_from_kaggle_by_index(index=0, cols=None):
+    """Load image and landmark information from the DEFAULT_TRAIN_SET
+
+    parameters
+    -----------
+
+    index :  The index of the data within DEFAULT_TRAIN_SET
+
+    returns
+    -----------
+    A tuple of numpy arrays where the first element is the numpy image vector and the second the landmark
+    """
+    df = pd.read_csv(DEFAULT_TRAIN_SET)
+
+    if isinstance(index, list):
+        x = [np.fromstring(im, sep=' ') for im in df.loc[index,'Image']]
+        x = np.vstack(x)
+    else:
+        x = np.fromstring(df.loc[index, 'Image'], sep=' ')
+        x = x.reshape((-1, x.shape[0]))
+
+    if cols is None:
+        cols = df.columns.tolist()
+        cols.pop(cols.index('Image'))
+
+    y = df.loc[index, cols].values
+
+    x = x.astype(np.float32)
+    y = y.astype(np.float32)
+
+    if np.any(np.isnan(y)):
+        raise ValueError("At least one nan present in landmarks data")
+
+    if not isinstance(index, list):
+        y = y.reshape((-1, y.shape[0]))
+
+    # Centre the data about the mean
+    x, x_max, x_mean = _scale_data(x)
+    y, y_max, y_mean = _scale_data(y)
+
+    return x, y, (x_max, x_mean, y_max, y_mean)
 
 def load_training_data(filename=DEFAULT_TRAIN_SET):
     """Load the training set
@@ -43,11 +193,20 @@ def load_training_data(filename=DEFAULT_TRAIN_SET):
     data = pandas.read_csv(filename)
     return data
 
-
 def remove_incomplete_data(data):
     return data.dropna()
 
+def _scale_data(data_in):
 
+    x = data_in
+    data_max = np.max(data_in)
+    x = x / data_max
+
+    data_mean = np.mean(x)
+    x = x - data_mean
+
+    return x, data_max, data_mean
+    
 def extract_image_landmarks(data_in):
 
     # Convert the images
@@ -58,26 +217,14 @@ def extract_image_landmarks(data_in):
     # Extract the images
     # Scale the images
     x = np.vstack(data_in['Image'].values)
-    x_max = np.max(x)
-    x /= x_max 
-
-    # Centre to the mean
-    x_mean = np.mean(x)
-    x -= x_mean 
-
+    x, x_max, x_mean = _scale_data(x)
     x = x.astype(np.float32)
 
     # Extract the labels
     labels = data_in.columns.tolist()
     labels.pop(labels.index('Image'))
     y = data_in[labels].values
-
-    y_max = np.max(y)
-    y = y / y_max 
-
-    y_mean = np.mean(y)
-    y = y - y_mean 
-
+    y, y_max, y_mean = _scale_data(y)
     y = y.astype(np.float32)
 
     return x, y, (x_max, x_mean, y_max, y_mean)
@@ -99,7 +246,7 @@ def load_data(filename=DEFAULT_TRAIN_SET, dropna=True, split_ratio=0.7):
     Parameters
     ------------
 
-    filename : (optional) the filename of the data set to load, default set to nnet.resources.DEFAULT_TRAIN_SET
+    filename : (optional) the filename of the data set to load, default set to DEFAULT_TRAIN_SET
     dropna   : (optional) remove samples with incomplete data from the original data set.  Set to True by default, det
                to False to keep all data
     split_ratio : (optional) the train / validation ratio for the data set.  0.7 by default (70% of the data is used for
@@ -264,3 +411,6 @@ def load_mnist_labels(filename=MNIST_TRAIN_LABELS):
             encoding[idx, label] = 1
         encoding = encoding.astype(np.float32)
         return encoding
+
+if __name__ == "__main__":
+    generate_specialised_datasets()

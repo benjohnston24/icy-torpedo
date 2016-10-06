@@ -4,6 +4,7 @@
 
 from .data import (
         RESOURCE_DIR,
+        DATA_FOLDER,
         DEFAULT_TRAIN_SET,
         MNIST_TRAIN_IMAGES,
         MNIST_TRAIN_LABELS,
@@ -11,6 +12,7 @@ from .data import (
         MNIST_TEST_LABELS,
         MNIST_NUMBER_LABELS,
         MNIST_IMAGE_SIZE,
+        KAGGLE_LANDMARKS,
         load_training_data,
         remove_incomplete_data,
         extract_image_landmarks,
@@ -20,4 +22,7 @@ from .data import (
         load_mnist_train_labels,
         load_mnist_test_images,
         load_mnist_test_labels,
+        generate_specialised_datasets,
+        load_prepared_indices,
+        load_from_kaggle_by_index,
         )
