@@ -12,7 +12,8 @@ import unittest
 from unittest.mock import mock_open
 import icyTorpedo.resources as resources
 from icyTorpedo.resources import load_mnist_test_images, load_mnist_test_labels, \
-        load_mnist_train_images, load_mnist_train_labels
+        load_mnist_train_images, load_mnist_train_labels, KAGGLE_LANDMARKS, \
+        load_prepared_indices, load_from_kaggle_by_index
 import os
 import pandas
 import numpy as np
@@ -26,14 +27,14 @@ __license__ = 'MPL v2.0'
 mock_file_open = mock_open()
 
 
-def assert_data_division(utest_obj, x_train, y_train, x_valid, y_valid, split_ratio, split_ratio_calculated):
+def assert_data_division(test_obj, x_train, y_train, x_valid, y_valid, split_ratio, split_ratio_calculated):
     # Check equal lengths
-    utest_obj.assertEqual(len(x_train), len(y_train), 'x and y train dataset lengths not equal: %d != %d' %
+    test_obj.assertEqual(len(x_train), len(y_train), 'x and y train dataset lengths not equal: %d != %d' %
                           (len(x_train), len(y_train)))
-    utest_obj.assertEqual(len(x_valid), len(y_valid), 'x and y valid dataset lengths not equal: %d != %d' %
+    test_obj.assertEqual(len(x_valid), len(y_valid), 'x and y valid dataset lengths not equal: %d != %d' %
                           (len(x_valid), len(y_valid)))
     # Check the correct ratios
-    utest_obj.assertEqual(split_ratio_calculated, split_ratio,
+    test_obj.assertEqual(split_ratio_calculated, split_ratio,
                           'incorrect split ratio: %0.2f' % split_ratio_calculated)
 
 
@@ -49,6 +50,16 @@ class TestResources(unittest.TestCase):
             'right_eye_center_y': pandas.Series([5, 5]),
             'Image': pandas.Series(["255 255 255 255", "255 255 255 255"]),
         })
+
+        self.y = np.array([
+            [1, 1],
+            [2, 2],
+            [3, 3],
+            [4, 4],
+            [5, 5]]).T
+
+        self.y = self.y / np.max(self.y)
+        self.y = self.y - np.mean(self.y)
 
     def test_resources_path(self):
         """Test the correct resources path """
@@ -119,31 +130,25 @@ class TestResources(unittest.TestCase):
         """Test landmark extraction of extract_image_landmarks 0"""
         train_data = self.train_data_extract_landmarks
         x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 0], np.float32((1 - 48) / 48))
+        np.testing.assert_approx_equal(y[0, 0], self.y[0, 0])
 
     def test_image_landmark_extraction_y_1(self):
         """Test landmark extraction of extract_image_landmarks 1"""
         train_data = self.train_data_extract_landmarks
         x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 1], np.float32((2 - 48) / 48))
+        np.testing.assert_approx_equal(y[0, 1], self.y[0, 1])
 
     def test_image_landmark_extraction_y_2(self):
         """Test landmark extraction of extract_image_landmarks 2"""
         train_data = self.train_data_extract_landmarks
         x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 2], np.float32((3 - 48) / 48))
+        np.testing.assert_approx_equal(y[1, 0], self.y[1, 0])
 
     def test_image_landmark_extraction_y_3(self):
         """Test landmark extraction of extract_image_landmarks 3"""
         train_data = self.train_data_extract_landmarks
         x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 3], np.float32((4 - 48) / 48))
-
-    def test_image_landmark_extraction_y_4(self):
-        """Test landmark extraction of extract_image_landmarks 4"""
-        train_data = self.train_data_extract_landmarks
-        x, y = resources.extract_image_landmarks(train_data)
-        np.testing.assert_approx_equal(y[0, 4], np.float32((5 - 48) / 48))
+        np.testing.assert_approx_equal(y[1, 1], self.y[1, 1])
 
     def test_splitting_training_data(self):
         """Test default train / valid set split"""
@@ -272,3 +277,42 @@ class TestMNISTData(unittest.TestCase):
                                 "First sample incorrectly labelled")
         np.testing.assert_equal(labels[-1], last_label,
                                 "First sample incorrectly labelled")
+
+class TestSpecialisedLandmarks(unittest.TestCase):
+
+    @unittest.skip("Run only when new data is generated, a very long test")
+    def test_pickled_specialised_landmarks(self):
+        """Test the validity of the pickled specialist landmark data"""
+
+        for idx, col in enumerate(KAGGLE_LANDMARKS):
+            with self.subTest(idx=idx):
+                train_idx, valid_idx, test_idx = load_prepared_indices(idx) 
+                data = load_from_kaggle_by_index(index=train_idx.tolist(),
+                                                          cols=col)
+                x_train, y_train = data[:2]
+                data = load_from_kaggle_by_index(index=valid_idx.tolist(),
+                                                             cols=col)
+                x_valid, y_valid = data[:2]
+                self.assertFalse(np.any(y_train is np.nan))
+                self.assertFalse(np.any(y_valid is np.nan))
+                self.assertFalse(np.any(x_train > 1))
+                self.assertFalse(np.any(y_train > 1))
+                self.assertFalse(np.any(x_train < -1))
+                self.assertFalse(np.any(y_train < -1))
+
+
+
+        # Just load the data, if an assertion error is raised the data is corrupt
+
+    def test_all_test_indices_identical(self):
+        """Test the saved test indices are identical"""
+
+        test_indices = []
+        for idx, col in enumerate(KAGGLE_LANDMARKS):
+            train_idx, valid_idx, test_idx = load_prepared_indices(idx) 
+            test_indices.append(test_idx)
+
+        for idx, col in enumerate(KAGGLE_LANDMARKS):
+            with self.subTest(idx=idx):
+                self.assertTrue(len(test_indices[idx]) == 0)  # Use test.csv as the kaggle test set
+                # self.assertTrue(np.all(test_indices[0] == test_indices[idx]))
