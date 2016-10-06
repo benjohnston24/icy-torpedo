@@ -132,7 +132,9 @@ def load_prepared_indices(landmark=0):
             int(data['idx']),
             landmark,
             ))
-    return (data['train_idx'], data['valid_idx'], data['test_idx'])
+    return (list(data['train_idx']), 
+            list(data['valid_idx']), 
+            list(data['test_idx']))
 
 def load_from_kaggle_by_index(index=0, cols=None):
     """Load image and landmark information from the DEFAULT_TRAIN_SET

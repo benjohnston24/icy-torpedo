@@ -113,6 +113,7 @@ class baseNetwork(object):
         delta_o = self.cost_function.prime(output=self.output_layer.a,
                                            target=targets) * \
             self.output_layer.linearity.prime(self.output_layer.h)
+        delta_o = delta_o.T
         self.output_layer.delta = delta_o
 
         # Store for later use
@@ -121,7 +122,7 @@ class baseNetwork(object):
         # Add the bias units of the previous layer
         inputs = addbiasunits(self.output_layer.input_layer.a)
 
-        self.output_layer.dc_dw = np.dot(inputs.T, delta_o)
+        self.output_layer.dc_dw = np.dot(inputs.T, delta_o.T)
 
         # Backprop over remaining layers
         for layer_idx in range(2, len(self.network_layers)):
@@ -132,15 +133,16 @@ class baseNetwork(object):
 
             # delta = (w^l+1 * delta^(l+1)) * sigma'(h^l)
             # Strip out the biases
-            delta = np.dot(layer_after.W[1:, :], delta.T) * \
-                layer.linearity.prime(layer.h).T
+            delta = np.dot(delta.T, layer_after.W[1:, :].T) * \
+                layer.linearity.prime(layer.h)
+            delta = delta.T
 
             layer.delta = delta
 
             # Add the bias units to the input
             inputs = addbiasunits(layer_before.a)
 
-            layer.dc_dw = np.dot(delta, inputs).T
+            layer.dc_dw = np.dot(inputs.T, delta.T)
 
     def updateweights(self, targets, psi=True):
         """Update the weights of the network in each layer:

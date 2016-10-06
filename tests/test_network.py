@@ -436,7 +436,7 @@ class TestMultipleSamples(unittest.TestCase):
 
         # Check output layer
         # delta_o = (a_o - t) * a_o * (1 - a_o)
-        np.testing.assert_almost_equal(self.net.output_layer.delta,
+        np.testing.assert_almost_equal(self.net.output_layer.delta.T,
                                        np.array([
                                            [-0.1218126],
                                            [-0.12176264],
