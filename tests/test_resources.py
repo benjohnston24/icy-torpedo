@@ -329,8 +329,6 @@ class TestSpecialisedLandmarks(unittest.TestCase):
                 self.assertFalse(np.any(x_train < -1))
                 self.assertFalse(np.any(y_train < -1))
 
-
-
         # Just load the data, if an assertion error is raised the data is corrupt
 
     def test_all_test_indices_identical(self):

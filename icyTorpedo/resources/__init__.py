@@ -26,3 +26,7 @@ from .data import (
         load_prepared_indices,
         load_from_kaggle_by_index,
         )
+
+from .muct_data import (
+        MUCTData,
+        )
