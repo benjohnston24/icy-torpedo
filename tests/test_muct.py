@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 import os
 from icyTorpedo.resources import MUCTData
 from copy import deepcopy as copy
+import numpy as np
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
@@ -90,3 +91,18 @@ class TestMUCT(unittest.TestCase):
 
         images = MUCTData.read_images_from_list()
         self.assertEqual(images.shape, (3, 640 * 480))
+
+    def test_split_test_validation_train_sets(self):
+        """Test the correct construction of the test, train, validation sets"""
+
+        train_images, valid_images, test_images = MUCTData.test_train_split_names(
+                split_ratio_test = 0.1, split_ratio_train = 0.7)
+
+        test_set_length = 226 
+        train_set_length = 1418 
+        valid_set_length = 2253 - test_set_length - train_set_length 
+
+        self.assertEqual(len(test_images), test_set_length)
+        self.assertEqual(len(train_images), train_set_length)
+        self.assertEqual(len(valid_images), valid_set_length)
+

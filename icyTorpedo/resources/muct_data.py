@@ -9,10 +9,12 @@ import os
 import scipy
 import numpy as np
 import pandas as pd
+from sklearn.cross_validation import train_test_split
+import time
 
 __author__ = 'Ben Johnston'
 __revision__ = '0.1'
-__date__ = 'Monday 10 October  22:43:27 AEDT 2016'
+__date__ = 'Wednesday 12 October  10:47:33 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 class MUCTData:
@@ -53,15 +55,39 @@ class MUCTData:
                 flatten=True)
         return img
 
-    def read_images_from_list():
+    def read_images_from_list(images_list=None):
         images = []
-        for image in MUCTData.yield_frontal_image_list():
+        if images_list is None:
+            images_list = MUCTData.yield_frontal_image_list()
+        for image in images_list: 
             img = MUCTData.read_image(image).flatten()
             images.append(img)
         return np.stack(images, axis=0)
 
-    def read_landmarks_from_list():
+    def read_landmarks_from_list(images_list=None):
         df = pd.read_csv(MUCTData.MUCT_IMAGE_LANDMARKS)
-        df = df[df['name'].isin(MUCTData.yield_frontal_images_names())]
+        if images_list is None:
+            images_list = MUCTData.yield_frontal_images_names()
+        df = df[df['name'].isin(images_list)]
         del df['tag']
         return df
+
+    def test_train_split_names(images_list=None, split_ratio_test=0.1,
+                               split_ratio_train=0.7):
+        images = []
+        if images_list is None:
+            images_list = MUCTData.yield_frontal_images_names()
+
+        all_images = [x for x in images_list]
+
+        remaining_images, test_images = train_test_split(
+                all_images,
+                train_size=(1 - split_ratio_test),
+                random_state=int(time.time()))
+
+        train_images, valid_images = train_test_split(
+                remaining_images,
+                train_size=split_ratio_train,
+                random_state=int(time.time()))
+
+        return train_images, valid_images, test_images
