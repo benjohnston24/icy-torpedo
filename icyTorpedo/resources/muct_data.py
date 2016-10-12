@@ -21,9 +21,11 @@ class MUCTData:
 
     MUCT_IMAGE_FOLDER = os.path.dirname(__file__)
     MUCT_IMAGE_LANDMARKS = os.path.join(MUCT_IMAGE_FOLDER,
-                                        'muct76-opencv.csv')
+                                        'me17-opencv.csv')
     MUCT_FRONTAL_IMAGE_LIST = os.path.join(MUCT_IMAGE_FOLDER,
                                            'muct_frontal_images.txt')
+    IMAGE_WIDTH = 480
+    IMAGE_HEIGHT = 640
 
     def set_muct_image_folder(folder):
         if folder is not None:
@@ -76,7 +78,7 @@ class MUCTData:
                                split_ratio_train=0.7):
         images = []
         if images_list is None:
-            images_list = MUCTData.yield_frontal_images_names()
+            images_list = MUCTData.yield_frontal_images_list()
 
         all_images = [x for x in images_list]
 

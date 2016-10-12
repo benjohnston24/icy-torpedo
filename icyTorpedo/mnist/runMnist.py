@@ -30,7 +30,7 @@ def _options(*args, **kwargs):
                         help='Number of nodes for each hidden network')
     parser.add_argument('-m', '--max_epochs', type=int, default=100, dest='epochs',
                         help='Maximum number of epochs')
-    parser.add_argument('-l', '--learn_rate', type=float, default=0.0001, dest='learn',
+    parser.add_argument('-l', '--learn_rate', type=float, default=0.001, dest='learn',
                         help='Learning rate')
     parser.add_argument('-p', '--patience', type=int, default=100, dest='patience',
                         help='Number of epochs after finding the best validation error to stop training')
