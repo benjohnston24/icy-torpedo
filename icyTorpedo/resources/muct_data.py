@@ -34,7 +34,7 @@ class MUCTData:
     def get_muct_image_folder():
         return MUCTData.MUCT_IMAGE_FOLDER
 
-    def yield_frontal_image_list():
+    def yield_frontal_images_list():
         with open(MUCTData.MUCT_FRONTAL_IMAGE_LIST, 'r') as f:
             line = f.readline()
             while line:
@@ -60,7 +60,7 @@ class MUCTData:
     def read_images_from_list(images_list=None):
         images = []
         if images_list is None:
-            images_list = MUCTData.yield_frontal_image_list()
+            images_list = MUCTData.yield_frontal_images_list()
         for image in images_list: 
             img = MUCTData.read_image(image).flatten()
             images.append(img)

@@ -10,6 +10,7 @@ from icyTorpedo.resources import load_mnist_train_images, \
 from icyTorpedo.layers import InputLayer, DenseLayer
 from icyTorpedo.network import baseNetwork
 from icyTorpedo.learningrates import FixedRate
+from icyTorpedo.momentum import FixedMomentum 
 from icyTorpedo.linearities import Linear
 
 __author__ = 'Ben Johnston'
@@ -33,6 +34,7 @@ def _main(*args, **kwargs):
     y_train = train_labels
     y_valid = train_labels
 
+
     l_input = InputLayer(num_units=28 ** 2, name="Input")
     l_hidden = DenseLayer(input_layer=l_input,
                           num_units=784,
@@ -46,7 +48,9 @@ def _main(*args, **kwargs):
             network_layers=[l_input, l_hidden, l_output],
             train_data=(x_train, y_train),
             valid_data=(x_valid, y_valid),
-            eta=FixedRate(0.001),
+            eta=FixedRate(0.0001),
+            momentum=FixedMomentum(0.9),
+            num_batches=10,
             max_epochs=100,
             patience=100,
             verbose=True,

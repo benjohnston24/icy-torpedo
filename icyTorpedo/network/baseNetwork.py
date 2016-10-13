@@ -6,6 +6,7 @@
 from icyTorpedo.layers import iterlayers, addbiasunits
 from icyTorpedo.costfunctions import SquaredError
 from icyTorpedo.learningrates import FixedRate
+from icyTorpedo.momentum import FixedMomentum
 import numpy as np
 import os
 import time
@@ -14,7 +15,7 @@ from six.moves import cPickle as pickle
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.3'
+__revision__ = '0.4'
 __date__ = 'Wednesday 5 October  09:56:55 AEDT 2016'
 __license__ = 'MPL v2.0'
 
@@ -23,6 +24,7 @@ DEFAULT_LOG_EXTENSION = '.log'
 DEFAULT_PKL_EXTENSION = '.pkl'
 LINE = "-" * 156
 
+MINIBATCHES_OFF = 1
 
 class baseNetwork(object):
 
@@ -32,7 +34,9 @@ class baseNetwork(object):
                  valid_data=(None, None),
                  test_data=(None, None),
                  eta=FixedRate(0.01),
+                 momentum=FixedMomentum(0.9),
                  costfunction=SquaredError,
+                 num_batches=MINIBATCHES_OFF,  # Set to 1 to di
                  max_epochs=np.inf,
                  patience=100,
                  regression=False,
@@ -47,7 +51,9 @@ class baseNetwork(object):
         # Define characteristics of the network
         self.cost_function = costfunction()
         self.eta = eta
+        self.momentum = momentum
         self.max_epochs = max_epochs
+        self.num_batches = num_batches 
         self.patience = patience
         self.verbose = verbose
         self.log_data = log_data
@@ -79,12 +85,14 @@ class baseNetwork(object):
         output += "Regression: %s\n" % str(self.regression)
         output += "Cost Function: %s\n" % str(self.cost_function)
         output += "Learning Rate: %s\n" % str(self.eta)
+        output += "Momentum: %s\n" % str(self.momentum)
         output += "x_train shape: %s\ty_train shape: %s\n" % \
                   (self.x_train.shape, self.y_train.shape)
         output += "x_valid shape: %s\ty_valid shape: %s\n" % \
                   (self.x_valid.shape, self.y_valid.shape)
         output += "Max Epochs: %.0f\n" % self.max_epochs
         output += "Patience: %d\n" % self.patience
+        output += "Number minibatches: %d\n" % self.num_batches
 
         return output
 
@@ -122,7 +130,8 @@ class baseNetwork(object):
         # Add the bias units of the previous layer
         inputs = addbiasunits(self.output_layer.input_layer.a)
 
-        self.output_layer.dc_dw = np.dot(inputs.T, delta_o.T)
+        #self.output_layer.dc_dw = np.dot(inputs.T, delta_o.T)
+        self.output_layer.set_dc_dw(np.dot(inputs.T, delta_o.T))
 
         # Backprop over remaining layers
         for layer_idx in range(2, len(self.network_layers)):
@@ -142,7 +151,8 @@ class baseNetwork(object):
             # Add the bias units to the input
             inputs = addbiasunits(layer_before.a)
 
-            layer.dc_dw = np.dot(inputs.T, delta.T)
+            # layer.dc_dw = np.dot(inputs.T, delta.T)
+            layer.set_dc_dw(np.dot(inputs.T, delta.T))
 
     def updateweights(self, targets, psi=True):
         """Update the weights of the network in each layer:
@@ -173,7 +183,9 @@ class baseNetwork(object):
         learning_rate = self.eta()
 
         while layer.input_layer is not None:
-            layer.W -= (learning_rate * layer.dc_dw)  # (layer.dc_dw / targets.shape[0])
+            update = ((learning_rate * layer.dc_dw) + (self.momentum() * layer.dc_dw_prev))
+            layer.dc_dw_prev = update
+            layer.W -= update 
 
             layer = layer.input_layer
 
@@ -237,15 +249,18 @@ class baseNetwork(object):
                                                    self.y_train,
                                                    random_state=int(time.time()))
 
-            # x_train_shuff, y_train_shuff = self.x_train, self.y_train
-            self.input_layer.set_inputs(x_train_shuff)
-            self.forwardprop(targets=y_train_shuff)
+            for x_batch, y_batch in zip(np.array_split(x_train_shuff, self.num_batches),
+                                        np.array_split(y_train_shuff, self.num_batches)):
 
-            # Run backprop
-            # Reload the training set for updating the weights
-            self.backprop(y_train_shuff)
-            # TODO: An adaptive update to weights to speed up process
-            eta = self.updateweights(y_train_shuff)
+                # x_train_shuff, y_train_shuff = self.x_train, self.y_train
+                self.input_layer.set_inputs(x_batch)
+                self.forwardprop(targets=y_batch)
+
+                # Run backprop
+                # Reload the training set for updating the weights
+                self.backprop(y_batch)
+                # TODO: An adaptive update to weights to speed up process
+                eta = self.updateweights(y_batch)
 
             # Predict based on current weights
             train_pred = self.predict(x_train_shuff)
@@ -278,7 +293,7 @@ class baseNetwork(object):
                 self.cache_best_weights()
 
             else:
-                improvement = ""
+                improvement = "{:0.7f}".format(self.min_valid_err)
 
             iteration_record = \
                 "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|".format(

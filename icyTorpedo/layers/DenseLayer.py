@@ -77,6 +77,12 @@ class DenseLayer(baseLayer):
         weights_shape = (self.input_layer.num_units + bias, self.num_units)
 
         self.W = np.random.uniform(-0.05, 0.05, weights_shape)
+        # max_weight = 1 / np.sqrt(self.input_layer.num_units)
+        # self.W = np.random.uniform(-max_weight, max_weight, weights_shape)
+
+        # Initialise changes to weights
+        self.dc_dw = np.zeros(self.W.shape)
+        self.dc_dw_prev = np.zeros(self.W.shape)
 
     def h_x(self, *args, **kwargs):
         """Compute the non linearised activations
@@ -135,6 +141,25 @@ class DenseLayer(baseLayer):
             self.a[:,units_to_drop] = 0
 
         return self.a
+    
+    def set_dc_dw(self, dc_dw):
+        """Set the derivative of cost function with respect to weights for layer
+
+        Parameters
+        -----------
+
+        dc_dw : numpy array of same shape as weights with the changes to the weights        
+
+        Returns
+        -----------
+
+        None
+        """
+
+        # Make a copy of the previous changes for use with momentum
+        #self.dc_dw_prev = np.copy(self.dc_dw)
+        self.dc_dw = dc_dw
+
 
     def __str__(self):
 

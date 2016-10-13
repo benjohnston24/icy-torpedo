@@ -44,7 +44,7 @@ class TestMUCT(unittest.TestCase):
         """Test the image list yields the correct locations"""
         MUCTData.set_muct_image_folder(INITIAL_IMAGE_FOLDER)
         counter = 0
-        for image in MUCTData.yield_frontal_image_list():
+        for image in MUCTData.yield_frontal_images_list():
             filename, ext = os.path.splitext(image)
             self.assertEqual(ext, '.jpg')
             counter += 1
@@ -52,7 +52,7 @@ class TestMUCT(unittest.TestCase):
         # Test the correct number of images
         self.assertEqual(counter, 2253)
 
-    @patch('icyTorpedo.resources.MUCTData.yield_frontal_image_list', mock_image_list)
+    @patch('icyTorpedo.resources.MUCTData.yield_frontal_images_list', mock_image_list)
     def test_read_frontal_image_names(self):
         """Test reading frontal image names"""
 
@@ -65,7 +65,7 @@ class TestMUCT(unittest.TestCase):
         """Test the location of the landmarks file"""
         self.assertEqual(MUCTData.MUCT_IMAGE_LANDMARKS,
                 '/home/ben/Workspace/icy-torpedo/icyTorpedo/'\
-                'resources/muct76-opencv.csv')
+                'resources/me17-opencv.csv')
 
     def test_landmarks_from_list(self):
         """Test the correct landmarks returned"""
@@ -76,7 +76,7 @@ class TestMUCT(unittest.TestCase):
             with self.subTest(image=image):
                 self.assertTrue(image in landmarks_names) 
 
-        self.assertEqual(landmarks.shape, (2253, 153))
+        self.assertEqual(landmarks.shape, (2253, 35))
 
     def test_read_image(self):
         """Test the reading of an image"""
@@ -85,7 +85,7 @@ class TestMUCT(unittest.TestCase):
 
         self.assertEqual(img.shape, (640, 480))
 
-    @patch('icyTorpedo.resources.MUCTData.yield_frontal_image_list', mock_image_list)
+    @patch('icyTorpedo.resources.MUCTData.yield_frontal_images_list', mock_image_list)
     def test_read_image_list(self):
         """Test reading a few images"""
 

@@ -225,10 +225,12 @@ class TestNetwork(unittest.TestCase):
                           "Regression: False\n"\
                           "Cost Function: SquaredError\n"\
                           "Learning Rate: FixedRate: 1.000000E-03\n"\
+                          "Momentum: FixedMomentum: 9.000000E-01\n"\
                           "x_train shape: (128, 784)\ty_train shape: (128, 10)\n"\
                           "x_valid shape: (78, 784)\ty_valid shape: (78, 10)\n"\
                           "Max Epochs: 2000\n"\
-                          "Patience: 100\n"
+                          "Patience: 100\n"\
+                          "Number minibatches: 1\n"
 
         self.assertEqual(str(self.net), expected_output)
 
