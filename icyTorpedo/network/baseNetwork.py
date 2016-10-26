@@ -15,8 +15,8 @@ from six.moves import cPickle as pickle
 
 
 __author__ = 'Ben Johnston'
-__revision__ = '0.4'
-__date__ = 'Wednesday 5 October  09:56:55 AEDT 2016'
+__revision__ = '0.5'
+__date__ = 'Wednesday 26 October  09:28:13 AEDT 2016'
 __license__ = 'MPL v2.0'
 
 
@@ -33,6 +33,7 @@ class baseNetwork(object):
                  train_data=(None, None),
                  valid_data=(None, None),
                  test_data=(None, None),
+                 train_data_flipped=(None, None),
                  eta=FixedRate(0.01),
                  momentum=FixedMomentum(0.9),
                  costfunction=SquaredError,
@@ -67,6 +68,7 @@ class baseNetwork(object):
         self.x_train, self.y_train = train_data
         self.x_valid, self.y_valid = valid_data
         self.x_test, self.y_test = test_data
+        self.x_train_flipped, self.y_train_flipped = train_data_flipped
 
         # Flag to indicate if the problem is a regression problem
         self.regression = regression
@@ -245,8 +247,18 @@ class baseNetwork(object):
 
             # Implement training
             # Shuffle the data
-            x_train_shuff, y_train_shuff = shuffle(self.x_train,
-                                                   self.y_train,
+            x_train_shuff = np.copy(self.x_train)
+            y_train_shuff = np.copy(self.y_train)
+
+            if (self.x_train_flipped is not None) and (self.y_train_flipped is not None):
+                indices_to_flip = np.random.choice(range(len(self.x_train)), 1)
+
+                for idx in indices_to_flip:
+                    x_train_shuff[idx] = self.x_train_flipped[idx]
+                    y_train_shuff[idx] = self.y_train_flipped[idx]
+
+            x_train_shuff, y_train_shuff = shuffle(x_train_shuff,
+                                                   y_train_shuff,
                                                    random_state=int(time.time()))
 
             for x_batch, y_batch in zip(np.array_split(x_train_shuff, self.num_batches),
@@ -261,6 +273,8 @@ class baseNetwork(object):
                 self.backprop(y_batch)
                 # TODO: An adaptive update to weights to speed up process
                 eta = self.updateweights(y_batch)
+
+            # TODO Redo pseudo - inverse / backprop for whole training set.
 
             # Predict based on current weights
             train_pred = self.predict(x_train_shuff)
@@ -282,25 +296,28 @@ class baseNetwork(object):
                 self.correct_class_history.append(correct_class)
 
             # End of the iteration
+
             finish_time = time.time()
 
             if (valid_err < self.min_valid_err):
                 improvement = "*"
                 self.min_valid_err = valid_err
                 self.best_epoch = epoch
+                self.eta.value =  0.95 * self.eta()
 
                 # Cache the best weights
                 self.cache_best_weights()
 
             else:
+#                self.eta.value = max(0.0001, 0.995 * self.eta())
                 improvement = "{:0.7f}".format(self.min_valid_err)
 
             iteration_record = \
                 "|{:^20}|{:^20}|{:^20}|{:^30}|{:^20}|{:^20}|{:^20}|".format(
                     epoch,
-                    "%0.6f" % train_err,
+                    "%E" % train_err,
                     "%0.6f" % valid_err,
-                    "%0.6f" % (np.cast['float32'](valid_err) / np.cast['float32'](train_err)),
+                    "%E" % (np.cast['float32'](valid_err) / np.cast['float32'](train_err)),
                     "%0.6f" % (finish_time - start_time),
                     improvement,
                     "%0.6E" % eta)
@@ -359,11 +376,11 @@ class baseNetwork(object):
     def save_network(self):
         data_to_save = {
             'network_layers': self.network_layers,
-            'best_epoch': self.best_epoch,
-            'min_valid_err': self.min_valid_err,
-            'train_err_hist': self.train_err_history,
-            'valid_err_hist': self.valid_err_history,
-            'correct_class_hist': self.correct_class_history,
+            # 'best_epoch': self.best_epoch,
+            # 'min_valid_err': self.min_valid_err,
+            # 'train_err_hist': self.train_err_history,
+            # 'valid_err_hist': self.valid_err_history,
+            # 'correct_class_hist': self.correct_class_history,
         }
 
         with open(self.save_params_filename, 'wb') as f:
@@ -376,11 +393,12 @@ class baseNetwork(object):
             data = pickle.load(f)
 
         self._setup_layers(data['network_layers'])
-        self.best_epoch = data['best_epoch']
-        self.min_valid_err = data['min_valid_err']
-        self.train_err_history = data['train_err_hist']
-        self.valid_err_history = data['valid_err_hist']
-        self.correct_class_history = data['correct_class_hist']
+        if False:
+            self.best_epoch = data['best_epoch']
+            self.min_valid_err = data['min_valid_err']
+            self.train_err_history = data['train_err_hist']
+            self.valid_err_history = data['valid_err_hist']
+            self.correct_class_history = data['correct_class_hist']
 
     def _setup_layers(self, network_layers):
         """Setup the layers for use in the object"""

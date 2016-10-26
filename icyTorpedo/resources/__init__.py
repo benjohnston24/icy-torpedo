@@ -4,7 +4,7 @@
 
 from .data import (
         RESOURCE_DIR,
-        DATA_FOLDER,
+        RESOURCE_DIR as DATA_FOLDER,
         DEFAULT_TRAIN_SET,
         MNIST_TRAIN_IMAGES,
         MNIST_TRAIN_LABELS,
@@ -29,4 +29,8 @@ from .data import (
 
 from .muct_data import (
         MUCTData,
+        )
+
+from .bioid_data import (
+        BioIdData,
         )
