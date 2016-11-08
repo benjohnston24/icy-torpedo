@@ -17,6 +17,7 @@ __revision__ = '0.1'
 __date__ = 'Wednesday 12 October  10:47:33 AEDT 2016'
 __license__ = 'MPL v2.0'
 
+
 class MUCTData:
 
     MUCT_IMAGE_FOLDER = os.path.dirname(__file__)

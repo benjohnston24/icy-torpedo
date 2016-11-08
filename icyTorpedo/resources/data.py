@@ -20,12 +20,12 @@ __license__ = 'MPL v2.0'
 
 
 RESOURCE_DIR = os.path.dirname(__file__)
-DATA_FOLDER = RESOURCE_DIR
-DEFAULT_TRAIN_SET = os.path.join(RESOURCE_DIR, 'training.csv')
-MNIST_TRAIN_IMAGES = os.path.join(RESOURCE_DIR, 'train-images-idx3-ubyte.gz')
-MNIST_TRAIN_LABELS = os.path.join(RESOURCE_DIR, 'train-labels-idx1-ubyte.gz')
-MNIST_TEST_IMAGES = os.path.join(RESOURCE_DIR, 't10k-images-idx3-ubyte.gz')
-MNIST_TEST_LABELS = os.path.join(RESOURCE_DIR, 't10k-labels-idx1-ubyte.gz')
+MNIST_FOLDER = '/home/ben/datasets/MNIST'
+DEFAULT_TRAIN_SET = os.path.join(MNIST_FOLDER, 'training.csv')
+MNIST_TRAIN_IMAGES = os.path.join(MNIST_FOLDER, 'train-images-idx3-ubyte.gz')
+MNIST_TRAIN_LABELS = os.path.join(MNIST_FOLDER, 'train-labels-idx1-ubyte.gz')
+MNIST_TEST_IMAGES = os.path.join(MNIST_FOLDER, 't10k-images-idx3-ubyte.gz')
+MNIST_TEST_LABELS = os.path.join(MNIST_FOLDER, 't10k-labels-idx1-ubyte.gz')
 MNIST_IMAGE_SIZE = 28 ** 2
 MNIST_NUMBER_LABELS = 10
 SPECIAL_LANDMARKS_NPY = "_specialised_landmarks.pkl"
@@ -98,7 +98,7 @@ def generate_specialised_datasets():
             ))
 
         filename = "{}{}".format(idx, SPECIAL_LANDMARKS_NPY)
-        filename = os.path.join(DATA_FOLDER, filename)
+        filename = os.path.join(RESOURCE_DIR, filename)
 
         with open(filename, 'wb') as f:
             pickle.dump(
@@ -121,7 +121,7 @@ def load_prepared_indices(landmark=0):
     -----------
     A tuple of numpy arrays containing the (training_indices, validation_indices, test_indices) 
     """
-    filename = os.path.join(DATA_FOLDER,
+    filename = os.path.join(RESOURCE_DIR,
                             "%d%s" % ( landmark, SPECIAL_LANDMARKS_NPY))
 
     with open(filename, 'rb') as f:
