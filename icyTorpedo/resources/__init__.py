@@ -25,6 +25,8 @@ from .data import (
         generate_specialised_datasets,
         load_prepared_indices,
         load_from_kaggle_by_index,
+        load_cifar10_train_data,
+        load_cifar10_test_data,
         )
 
 from .muct_data import (

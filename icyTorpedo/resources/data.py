@@ -20,6 +20,7 @@ __license__ = 'MPL v2.0'
 
 
 RESOURCE_DIR = os.path.dirname(__file__)
+## MNIST
 MNIST_FOLDER = '/home/ben/datasets/MNIST'
 DEFAULT_TRAIN_SET = os.path.join(MNIST_FOLDER, 'training.csv')
 MNIST_TRAIN_IMAGES = os.path.join(MNIST_FOLDER, 'train-images-idx3-ubyte.gz')
@@ -28,6 +29,12 @@ MNIST_TEST_IMAGES = os.path.join(MNIST_FOLDER, 't10k-images-idx3-ubyte.gz')
 MNIST_TEST_LABELS = os.path.join(MNIST_FOLDER, 't10k-labels-idx1-ubyte.gz')
 MNIST_IMAGE_SIZE = 28 ** 2
 MNIST_NUMBER_LABELS = 10
+
+#CIFAR10
+CIFAR10_FOLDER = '/home/ben/datasets/CIFAR10'
+CIFAR10_TRAIN_DATA = [os.path.join(CIFAR10_FOLDER, 'data_batch_%d.bin' % i) for i in range(1,6)]
+CIFAR10_TEST_DATA = os.path.join(CIFAR10_FOLDER, 'test_batch.bin')
+
 SPECIAL_LANDMARKS_NPY = "_specialised_landmarks.pkl"
 
 KAGGLE_LANDMARKS = (
@@ -413,6 +420,47 @@ def load_mnist_labels(filename=MNIST_TRAIN_LABELS):
             encoding[idx, label] = 1
         encoding = encoding.astype(np.float32)
         return encoding
+
+def _read_cifar10(filename):
+
+    SAMPLES_PER_FILE = 1000
+
+    labels = []
+    images = []
+
+    with open(filename, "rb") as f:
+        for i in range(SAMPLES_PER_FILE):
+            labels.append(np.frombuffer(f.read(1), np.uint8)[0])
+            channels = []
+            for j in range(len("RBG")):
+                channels.append(np.frombuffer(f.read(1024), np.uint8))
+                channels[-1] = channels[-1].reshape((32,32))
+            images.append(np.stack(channels, axis=2))
+
+    return labels, images
+
+def load_cifar10_data(data=CIFAR10_TRAIN_DATA):
+
+    train_labels = []
+    train_images = []
+
+    # According to http://www.cs.toronto.edu/~kriz/cifar.html 
+    # each training file contains 1000 images and labels 
+    for filename in data:
+        labels, images = _read_cifar10(filename)
+        train_labels.extend(labels)
+        train_images.extend(images)
+
+    import pdb;pdb.set_trace()
+    return np.array(train_labels).reshape((-1, 1)), np.array(train_images)
+        
+def load_cifar10_train_data(data=CIFAR10_TRAIN_DATA):
+    return load_cifar10_data(data)
+
+def load_cifar10_test_data(data=[CIFAR10_TEST_DATA]):
+    return load_cifar10_data(data)
+
+
 
 if __name__ == "__main__":
     generate_specialised_datasets()
