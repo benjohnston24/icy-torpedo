@@ -27,6 +27,7 @@ from .data import (
         load_from_kaggle_by_index,
         load_cifar10_train_data,
         load_cifar10_test_data,
+        load_cifar10_meta_data,
         )
 
 from .muct_data import (
