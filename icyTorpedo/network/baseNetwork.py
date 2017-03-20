@@ -375,7 +375,8 @@ class baseNetwork(object):
     # Save the network
     def save_network(self):
         data_to_save = {
-            'network_layers': self.network_layers,
+            'weights': [layer.best_W for layer in self.network_layers[1:]]
+            # 'network_layers': self.network_layers,
             # 'best_epoch': self.best_epoch,
             # 'min_valid_err': self.min_valid_err,
             # 'train_err_hist': self.train_err_history,
@@ -392,7 +393,10 @@ class baseNetwork(object):
         with open(filename, 'rb') as f:
             data = pickle.load(f)
 
-        self._setup_layers(data['network_layers'])
+        for layer, weights in zip(self.network_layers[1:], data['weights']):
+            layer.W = weights 
+
+        #self._setup_layers(data['network_layers'])
         if False:
             self.best_epoch = data['best_epoch']
             self.min_valid_err = data['min_valid_err']

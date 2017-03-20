@@ -9,7 +9,11 @@ import os
 import scipy
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+import sklearn
+if sklearn.__version__ != "0.17.1":
+    from sklearn.model_selection import train_test_split
+else:
+    from sklearn.cross_validation import train_test_split
 import time
 
 __author__ = 'Ben Johnston'

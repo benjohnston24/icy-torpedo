@@ -2,7 +2,6 @@ coverage==4.2
 cycler==0.10.0
 decorator==4.0.10
 flake8==3.0.4
-icyTorpedo==0.1.0
 ipython==5.1.0
 ipython-genutils==0.1.0
 mccabe==0.5.2
